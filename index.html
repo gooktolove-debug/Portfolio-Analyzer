@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>개인용 투자 자산배분 MVP (모바일 최적화)</title>
+  <meta name="description" content="CSV 업로드 기반 개인용 투자 자산배분 대시보드 MVP - NZD/KRW 표시 전환, 모바일 최적화" />
+  <style>
+    :root {
+      --bg: #f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --line-soft:#f1f5f9;
+      --accent:#2563eb; --accent-soft:#dbeafe; --danger:#dc2626; --shadow:0 10px 30px rgba(15,23,42,.08); --radius:20px;
+      --pension:#8b5cf6; --risk:#ef4444; --safe:#10b981; --us:#3b82f6; --kr:#f97316; --nz:#0f766e;
+      --bond:#06b6d4; --gold:#eab308; --cash:#84cc16; --active-growth:#a78bfa; --aggressive:#c084fc;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
+    body{padding:24px; overflow-x:hidden}
+    .container{max-width:1280px;margin:0 auto}
+    .grid{display:grid;gap:24px}
+    .grid-top{grid-template-columns:1.15fr .85fr}
+    .grid-bottom{grid-template-columns:1.15fr .85fr;align-items:start}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden; min-width:0}
+    .card-header{padding:24px 24px 0}.card-body{padding:24px}.title-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .title{font-size:30px;font-weight:800;margin:0;letter-spacing:-.02em}.subtitle{margin:10px 0 0;color:var(--muted);line-height:1.7}.icon-badge{min-width:56px;height:56px;border-radius:18px;background:#f1f5f9;display:grid;place-items:center;font-size:26px}
+    .section-title{margin:0;font-size:22px;font-weight:800}.section-subtitle{margin:8px 0 0;color:var(--muted);line-height:1.6; word-break:keep-all}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}.upload-label,.btn{border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--text);font-weight:700;cursor:pointer;transition:.2s ease;font-size:15px; min-width:0}.upload-label:hover,.btn:hover{transform:translateY(-1px);background:#f8fafc}.upload-label input{display:none}
+    .code-box{background:#020617;color:#e2e8f0;border-radius:16px;padding:16px;overflow:auto}.code-box pre{margin:8px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.75;color:#cbd5e1}.mini-title{font-size:14px;font-weight:800;margin:0}.small-note{font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.7}
+    .error,.notice{display:none;margin-top:16px;border-radius:16px;padding:12px 16px;font-size:14px;line-height:1.6}.error{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c}.notice{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8}.error.show,.notice.show{display:block}
+    .toolbar-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+    .currency-toggle{display:inline-flex;gap:8px;padding:6px;border:1px solid var(--line);background:#f8fafc;border-radius:999px;max-width:100%}
+    .toggle-btn{border:none;background:transparent;color:var(--muted);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;transition:.2s ease}.toggle-btn.active{background:var(--accent);color:#fff}.toggle-note{font-size:12px;color:var(--muted)}
+    .table-wrap{overflow-x:auto} table{width:100%;border-collapse:collapse;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff} thead{background:#f1f5f9} th,td{padding:14px 16px;text-align:left} th:nth-child(2),td:nth-child(2),th:nth-child(3),td:nth-child(3){text-align:right} tbody tr{border-top:1px solid var(--line-soft)} tbody tr.total-row{border-top:2px solid var(--line);background:#f8fafc;font-weight:800}
+    .chart-wrap{height:500px;position:relative;overflow:hidden; display:flex; align-items:center; justify-content:center}
+    .chart-wrap canvas{max-width:100% !important; max-height:100% !important}
+    .mobile-legend{display:none}
+    .mobile-legend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}
+    .mobile-legend-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}
+    .mobile-legend-dot{width:10px;height:10px;border-radius:999px;flex:0 0 10px}
+    .mobile-legend-text{font-size:12px;line-height:1.35;color:var(--text);min-width:0;word-break:break-word}
+    .side-grid{display:grid;gap:16px}.info-box{background:#f8fafc;border-radius:16px;padding:16px;border:1px solid var(--line); min-width:0}.info-box h3{margin:0 0 12px;font-size:15px}.info-box ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.85}.legend-note{margin-top:12px;font-size:13px;color:var(--muted);line-height:1.6}.pill-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.pill{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+    .stats-grid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}.stat-card{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;min-width:0}.stat-label{font-size:12px;color:var(--muted);margin-bottom:6px}.stat-value{font-size:20px;font-weight:800; word-break:break-word}.fx-list{display:grid;gap:10px}.fx-item{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px}.fx-label{color:var(--muted)}.fx-value{font-weight:800;text-align:right}
+    .pension-grid,.fx-input-grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}.field{display:grid;gap:8px}.field label{font-size:13px;font-weight:700;color:var(--muted)}.field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);font-size:15px;outline:none;background:#fff}.field input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}.hint{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.chip{background:#eef2ff;color:#4338ca;font-size:12px;font-weight:700;border-radius:999px;padding:6px 10px}
+
+    @media (max-width:980px){
+      body{padding:12px}
+      .grid-top,.grid-bottom,.actions,.pension-grid,.stats-grid,.fx-input-grid{grid-template-columns:1fr}
+      .title{font-size:24px}
+      .card-header{padding:18px 18px 0}
+      .card-body{padding:18px}
+      .chart-wrap{height:320px}
+      .toolbar-row{align-items:flex-start}
+      .section-subtitle{font-size:14px; line-height:1.75}
+      .mobile-legend{display:block}
+      .code-box{padding:14px}
+      .info-box{padding:14px}
+      .title-row{align-items:flex-start}
+      .icon-badge{min-width:48px;height:48px;font-size:22px}
+      .toggle-btn{padding:8px 12px}
+      .pill-list{gap:6px}
+      .pill{font-size:11px;padding:6px 8px}
+      .fx-item{font-size:13px}
+      table{font-size:14px}
+      th,td{padding:12px 10px}
+    }
+    @media (max-width:520px){
+      body{padding:10px}
+      .title{font-size:22px}
+      .section-title{font-size:18px}
+      .chart-wrap{height:280px}
+      .mobile-legend-grid{grid-template-columns:1fr}
+      .currency-toggle{width:100%; justify-content:space-between}
+      .toggle-btn{flex:1}
+      .toolbar-row{gap:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="grid grid-top" style="margin-bottom:24px;">
+      <section class="card">
+        <div class="card-header">
+          <div class="title-row">
+            <div>
+              <h1 class="title">개인용 투자 자산배분 MVP (모바일 최적화)</h1>
+              <p class="subtitle">CSV의 <strong>Symbol / Current Price / Quantity</strong>를 읽어서 자산을 계산하고, 기본은 <strong>NZD</strong>로 표시하되 필요 시 <strong>KRW</strong> 표시로 전환할 수 있습니다.</p>
+            </div>
+            <div class="icon-badge">📱</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="actions">
+            <label class="upload-label"><span>📁 CSV 업로드</span><input type="file" id="csvFileInput" accept=".csv,text/csv" /></label>
+            <button class="btn" id="loadDemoBtn" type="button">🔄 샘플 데이터 불러오기</button>
+          </div>
+          <div class="code-box">
+            <p class="mini-title">업데이트된 분류 규칙</p>
+            <pre>Bond: IEF, 305080.KS
+Gold: IAUM, 0072R0.KS
+Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
+한국: 숫자 + .KS (단, 위 예외 우선)
+미국: 영어 only
+뉴질랜드: 영어 + .NZ (단, NZC는 Cash 우선)</pre>
+            <p class="small-note">※ 현금 통화(KRW/USD/NZD)는 Quantity를 그대로 금액으로 사용하고, 그 외 심볼은 Current Price × Quantity로 계산합니다. 표시는 NZD/KRW 전환이 가능하지만, 내부 비중 계산은 동일합니다.</p>
+          </div>
+          <div id="noticeBox" class="notice"></div>
+          <div id="errorBox" class="error"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="section-title">연금 입력 + 환율 입력</h2>
+          <p class="section-subtitle">CSV에 환율 행이 없으면 아래 입력값을 사용합니다. 입력값은 브라우저에 저장됩니다.</p>
+        </div>
+        <div class="card-body">
+          <div class="info-box" style="margin-bottom:16px;">
+            <h3>연금 수동 입력 (NZD 기준 입력)</h3>
+            <div class="pension-grid">
+              <div class="field"><label for="activeGrowthInput">Active Growth (NZD)</label><input id="activeGrowthInput" type="number" min="0" step="0.01" placeholder="예: 12000" /></div>
+              <div class="field"><label for="aggressiveInput">Aggressive (NZD)</label><input id="aggressiveInput" type="number" min="0" step="0.01" placeholder="예: 8000" /></div>
+            </div>
+          </div>
+          <div class="info-box" style="margin-bottom:16px;">
+            <h3>환율 입력 / 자동 보정</h3>
+            <div class="fx-input-grid">
+              <div class="field"><label for="nzdusdInput">NZDUSD (= 1 NZD 당 USD)</label><input id="nzdusdInput" type="number" min="0" step="0.000001" placeholder="예: 0.591086" /></div>
+              <div class="field"><label for="nzdkrwInput">NZDKRW (= 1 NZD 당 KRW)</label><input id="nzdkrwInput" type="number" min="0" step="0.01" placeholder="예: 870.9" /></div>
+            </div>
+            <div class="hint">CSV에 <strong>NZDUSD=X</strong>, <strong>NZDKRW=X</strong>가 있으면 해당 값으로 자동 덮어씁니다. 없으면 위 입력값을 사용합니다.</div>
+          </div>
+          <div class="info-box" style="margin-bottom:16px;">
+            <h3>현재 적용 환율</h3>
+            <div class="fx-list" id="fxList"></div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">총자산</div><div class="stat-value" id="totalValue">0</div></div>
+            <div class="stat-card"><div class="stat-label">CSV 종목 수</div><div class="stat-value" id="holdingCount">0</div></div>
+            <div class="stat-card"><div class="stat-label">연금 합계</div><div class="stat-value" id="pensionTotalValue">0</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <div class="toolbar-row">
+          <div>
+            <h2 class="section-title">카테고리 비중 테이블</h2>
+            <p class="section-subtitle">내부 계산 기준은 NZD이며, 화면 표시는 NZD 또는 KRW로 전환할 수 있습니다.</p>
+          </div>
+          <div>
+            <div class="currency-toggle" role="group" aria-label="표시 통화 선택">
+              <button id="displayNzdBtn" class="toggle-btn active" type="button">NZD</button>
+              <button id="displayKrwBtn" class="toggle-btn" type="button">KRW</button>
+            </div>
+            <div class="toggle-note">기본 표시 통화: NZD</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body table-wrap">
+        <table>
+          <thead><tr><th>카테고리</th><th id="amountHeader">금액 (NZD)</th><th>전체 대비 비율</th></tr></thead>
+          <tbody id="allocationTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2 class="section-title">2중 구조 파이차트</h2>
+        <p class="section-subtitle">안쪽: 연금 / 안전자산 / 위험자산 · 바깥쪽: Active Growth / Aggressive / 채권 / Gold / Cash / 미국 / 한국 / 뉴질랜드</p>
+      </div>
+      <div class="card-body">
+        <div class="grid grid-bottom">
+          <div>
+            <div class="chart-wrap"><canvas id="allocationChart"></canvas></div>
+            <div id="mobileLegend" class="mobile-legend"></div>
+          </div>
+          <div class="side-grid">
+            <div class="info-box">
+              <h3>파이차트 매칭 규칙</h3>
+              <ul>
+                <li><strong>연금</strong> ↔ <strong>Active Growth, Aggressive</strong></li>
+                <li><strong>안전자산</strong> ↔ <strong>채권, Gold, Cash</strong></li>
+                <li><strong>위험자산</strong> ↔ <strong>미국, 한국, 뉴질랜드</strong></li>
+              </ul>
+              <div class="chip-row"><span class="chip">Inner/Outer 순서 동일</span><span class="chip">모바일 범례 최적화</span><span class="chip">표시 통화 전환 지원</span></div>
+            </div>
+            <div class="info-box">
+              <h3>이번 추가 예외 심볼</h3>
+              <ul>
+                <li><strong>0072R0.KS</strong> → Gold</li>
+                <li><strong>305080.KS</strong> → 채권</li>
+                <li>CSV에 환율 행이 없으면 <strong>수동 환율</strong> 사용</li>
+              </ul>
+            </div>
+            <div class="info-box">
+              <h3>모바일 최적화 포인트</h3>
+              <ul>
+                <li>차트 높이/패딩 축소</li>
+                <li>캔버스 overflow 방지</li>
+                <li>모바일에서는 범례를 카드형 리스트로 분리</li>
+                <li>가로 스크롤 발생 최소화</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script>
+    const DEFAULT_FX = { usdPerNzd: 0.5910864, krwPerNzd: 870.9 };
+    const DEFAULT_DISPLAY_CURRENCY = 'NZD';
+    const MOBILE_BREAKPOINT = 980;
+    const SAMPLE_CSV = `Symbol,Current Price,Quantity\nUSD,,500\n0072R0.KS,14765,60\nIAUM,46.65,4\n305080.KS,13330,252\nSPYG,112.94,7\n102110.KS,100320,19`;
+    const COLORS = {
+      pension: getCss('--pension'), safe: getCss('--safe'), risk: getCss('--risk'), us: getCss('--us'), kr: getCss('--kr'), nz: getCss('--nz'),
+      bond: getCss('--bond'), gold: getCss('--gold'), cash: getCss('--cash'), activeGrowth: getCss('--active-growth'), aggressive: getCss('--aggressive')
+    };
+    const CATEGORY_ORDER = ['미국','한국','뉴질랜드','채권','Gold','Cash','연금'];
+    const FX_SYMBOLS = new Set(['KRW=X','NZDKRW=X','NZDUSD=X']);
+    const CASH_SYMBOLS = new Set(['KRW','USD','NZD','NZC','NZC.NZ','SGOV']);
+    const CASH_BALANCE_SYMBOLS = new Set(['KRW','USD','NZD']);
+    const BOND_SYMBOLS = new Set(['IEF','305080.KS']);
+    const GOLD_SYMBOLS = new Set(['IAUM','0072R0.KS']);
+    let rows = []; let chart = null; let lastSummary = null; let displayCurrency = DEFAULT_DISPLAY_CURRENCY; let lastViewportMode = null;
+
+    function isMobileView(){ return window.innerWidth <= MOBILE_BREAKPOINT; }
+    function getCss(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function toNumber(value){ const cleaned = String(value == null ? '' : value).trim().replace(/,/g,''); if(cleaned==='') return 0; return Number(cleaned); }
+    function percent(n){ return `${(Number(n||0)).toFixed(1)}%`; }
+    function escapeHtml(value){ return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+    function showError(message){ const box=document.getElementById('errorBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message)); }
+    function showNotice(message){ const box=document.getElementById('noticeBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message)); }
+
+    function readStoredSettings(){
+      return {
+        activeGrowth: Number(localStorage.getItem('pension_active_growth')||'0')||0,
+        aggressive: Number(localStorage.getItem('pension_aggressive')||'0')||0,
+        usdPerNzd: Number(localStorage.getItem('fx_usd_per_nzd')||String(DEFAULT_FX.usdPerNzd)) || DEFAULT_FX.usdPerNzd,
+        krwPerNzd: Number(localStorage.getItem('fx_krw_per_nzd')||String(DEFAULT_FX.krwPerNzd)) || DEFAULT_FX.krwPerNzd,
+        displayCurrency: localStorage.getItem('display_currency') || DEFAULT_DISPLAY_CURRENCY,
+      };
+    }
+    function saveSettings(settings){
+      localStorage.setItem('pension_active_growth', String(settings.activeGrowth||0));
+      localStorage.setItem('pension_aggressive', String(settings.aggressive||0));
+      localStorage.setItem('fx_usd_per_nzd', String(settings.usdPerNzd||0));
+      localStorage.setItem('fx_krw_per_nzd', String(settings.krwPerNzd||0));
+      localStorage.setItem('display_currency', settings.displayCurrency || displayCurrency || DEFAULT_DISPLAY_CURRENCY);
+    }
+    function setInputsFromStorage(){
+      const s = readStoredSettings();
+      document.getElementById('activeGrowthInput').value = s.activeGrowth ? s.activeGrowth : '';
+      document.getElementById('aggressiveInput').value = s.aggressive ? s.aggressive : '';
+      document.getElementById('nzdusdInput').value = s.usdPerNzd || '';
+      document.getElementById('nzdkrwInput').value = s.krwPerNzd || '';
+      displayCurrency = (s.displayCurrency === 'KRW') ? 'KRW' : 'NZD';
+      updateDisplayCurrencyButtons();
+    }
+    function getInputSettings(){
+      return {
+        activeGrowth: Math.max(0, toNumber(document.getElementById('activeGrowthInput').value)),
+        aggressive: Math.max(0, toNumber(document.getElementById('aggressiveInput').value)),
+        usdPerNzd: Math.max(0, toNumber(document.getElementById('nzdusdInput').value)),
+        krwPerNzd: Math.max(0, toNumber(document.getElementById('nzdkrwInput').value)),
+        displayCurrency,
+      };
+    }
+
+    function formatCurrencyValue(value, currencyCode){
+      return new Intl.NumberFormat(currencyCode === 'KRW' ? 'ko-KR' : 'en-NZ', {
+        style:'currency', currency: currencyCode, maximumFractionDigits: 0
+      }).format(Number(value||0));
+    }
+    function convertNzdForDisplay(nzdValue, fx){ return displayCurrency === 'KRW' ? Number(nzdValue||0) * Number(fx.krwPerNzd||0) : Number(nzdValue||0); }
+    function formatDisplayAmount(nzdValue, fx){ return displayCurrency === 'KRW' ? formatCurrencyValue(convertNzdForDisplay(nzdValue, fx), 'KRW') : formatCurrencyValue(nzdValue, 'NZD'); }
+    function updateDisplayCurrencyButtons(){
+      document.getElementById('displayNzdBtn').classList.toggle('active', displayCurrency === 'NZD');
+      document.getElementById('displayKrwBtn').classList.toggle('active', displayCurrency === 'KRW');
+      document.getElementById('amountHeader').textContent = `금액 (${displayCurrency})`;
+    }
+
+    function parseCsvLine(line){ const out=[]; let current=''; let inQuotes=false; for(let i=0;i<line.length;i+=1){ const ch=line[i]; if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ current+='"'; i+=1; } else { inQuotes=!inQuotes; } } else if(ch===',' && !inQuotes){ out.push(current); current=''; } else { current+=ch; } } out.push(current); return out; }
+    function parseCsv(text){
+      const lines = String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim().length>0);
+      if(!lines.length) return [];
+      const headers = parseCsvLine(lines[0]).map(h=>String(h||'').trim().toLowerCase());
+      const symbolIdx = headers.findIndex(h=>['symbol','ticker'].includes(h));
+      const priceIdx = headers.findIndex(h=>['current price','current_price','price'].includes(h));
+      const qtyIdx = headers.findIndex(h=>['quantity','qty','amount'].includes(h));
+      if(symbolIdx===-1 || priceIdx===-1 || qtyIdx===-1) throw new Error('CSV에 Symbol, Current Price, Quantity 컬럼이 필요합니다.');
+      return lines.slice(1).map((line,idx)=>{
+        const parts=parseCsvLine(line); const symbol=String(parts[symbolIdx]||'').trim().toUpperCase(); const currentPrice=toNumber(parts[priceIdx]); const quantity=toNumber(parts[qtyIdx]);
+        if(!symbol) return null; if(Number.isNaN(quantity)) throw new Error(`${idx+2}번째 행의 Quantity 값이 숫자가 아닙니다.`); if(Number.isNaN(currentPrice)) throw new Error(`${idx+2}번째 행의 Current Price 값이 숫자가 아닙니다.`);
+        return { symbol, currentPrice, quantity };
+      }).filter(Boolean);
+    }
+
+    function extractFx(parsedRows){
+      const input = getInputSettings();
+      let usdPerNzd = input.usdPerNzd || 0;
+      let krwPerNzd = input.krwPerNzd || 0;
+      let foundUsd = false; let foundKrw = false;
+      parsedRows.forEach(row=>{
+        if(row.symbol === 'NZDUSD=X' && row.currentPrice){ usdPerNzd = row.currentPrice; foundUsd = true; }
+        if(row.symbol === 'NZDKRW=X' && row.currentPrice){ krwPerNzd = row.currentPrice; foundKrw = true; }
+      });
+      if(!usdPerNzd || !krwPerNzd) throw new Error('환율을 계산할 수 없습니다. NZDUSD / NZDKRW를 입력하거나, CSV에 NZDUSD=X / NZDKRW=X 행을 포함해 주세요.');
+      return { usdPerNzd, krwPerNzd, source: (foundUsd || foundKrw) ? 'csv' : 'manual' };
+    }
+    function classifyHolding(symbol){
+      const normalized = String(symbol||'').trim().toUpperCase();
+      if(!normalized) return null;
+      if(FX_SYMBOLS.has(normalized)) return { skip:true };
+      if(BOND_SYMBOLS.has(normalized)) return { category:'채권', currency: normalized.endsWith('.KS') ? 'KRW' : 'USD' };
+      if(GOLD_SYMBOLS.has(normalized)) return { category:'Gold', currency: normalized.endsWith('.KS') ? 'KRW' : 'USD' };
+      if(CASH_SYMBOLS.has(normalized)){
+        if(normalized === 'KRW') return { category:'Cash', currency:'KRW' };
+        if(normalized === 'USD') return { category:'Cash', currency:'USD' };
+        if(normalized === 'NZD' || normalized === 'NZC' || normalized === 'NZC.NZ') return { category:'Cash', currency:'NZD' };
+        if(normalized === 'SGOV') return { category:'Cash', currency:'USD' };
+      }
+      if(/^\d+\.KS$/.test(normalized)) return { category:'한국', currency:'KRW' };
+      if(/^[A-Z]+\.NZ$/.test(normalized)) return { category:'뉴질랜드', currency:'NZD' };
+      if(/^[A-Z]+$/.test(normalized)) return { category:'미국', currency:'USD' };
+      return { category:'기타', currency:'NZD' };
+    }
+    function isCashBalanceSymbol(symbol){ return CASH_BALANCE_SYMBOLS.has(String(symbol||'').trim().toUpperCase()); }
+    function getNativeAssetValue(row){ return isCashBalanceSymbol(row.symbol) ? (row.quantity||0) : ((row.currentPrice||0) * (row.quantity||0)); }
+    function convertToNzd(value, currency, fx){ if(currency==='NZD') return value; if(currency==='USD') return value / fx.usdPerNzd; if(currency==='KRW') return value / fx.krwPerNzd; return value; }
+
+    function computeSummary(parsedRows){
+      const settings = getInputSettings();
+      const fx = extractFx(parsedRows);
+      const sums = { 미국:0, 한국:0, 뉴질랜드:0, 채권:0, Gold:0, Cash:0, 연금:0 };
+      const holdings = [];
+      parsedRows.forEach(row=>{
+        const info = classifyHolding(row.symbol); if(!info || info.skip) return;
+        const nativeValue = getNativeAssetValue(row); const nzdValue = convertToNzd(nativeValue, info.currency, fx); if(!Number.isFinite(nzdValue)) return;
+        if(Object.prototype.hasOwnProperty.call(sums, info.category)) sums[info.category] += nzdValue;
+        holdings.push({ symbol: row.symbol, category: info.category, currency: info.currency, nativeValue, nzdValue });
+      });
+      sums['연금'] = settings.activeGrowth + settings.aggressive;
+      const total = Object.values(sums).reduce((sum,current)=>sum+current,0);
+      const topCategories = CATEGORY_ORDER.map(name=>({ name, value: sums[name]||0, ratio: total>0 ? ((sums[name]||0)/total)*100 : 0 }));
+      const inner = [
+        { name:'연금', value:sums['연금'], color:COLORS.pension },
+        { name:'안전자산', value:sums['채권'] + sums['Gold'] + sums['Cash'], color:COLORS.safe },
+        { name:'위험자산', value:sums['미국'] + sums['한국'] + sums['뉴질랜드'], color:COLORS.risk },
+      ].filter(item=>item.value>0);
+      const outer = [
+        { name:'Active Growth', value:settings.activeGrowth, color:COLORS.activeGrowth },
+        { name:'Aggressive', value:settings.aggressive, color:COLORS.aggressive },
+        { name:'채권', value:sums['채권'], color:COLORS.bond },
+        { name:'Gold', value:sums['Gold'], color:COLORS.gold },
+        { name:'Cash', value:sums['Cash'], color:COLORS.cash },
+        { name:'미국', value:sums['미국'], color:COLORS.us },
+        { name:'한국', value:sums['한국'], color:COLORS.kr },
+        { name:'뉴질랜드', value:sums['뉴질랜드'], color:COLORS.nz },
+      ].filter(item=>item.value>0);
+      return { fx, total, holdings, sums, topCategories, inner, outer, settings };
+    }
+
+    function renderFx(fx){
+      document.getElementById('fxList').innerHTML = `
+        <div class="fx-item"><span class="fx-label">1 NZD =</span><span class="fx-value">${new Intl.NumberFormat('en-NZ',{minimumFractionDigits:0,maximumFractionDigits:6}).format(fx.usdPerNzd)} USD</span></div>
+        <div class="fx-item"><span class="fx-label">1 NZD =</span><span class="fx-value">${new Intl.NumberFormat('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:2}).format(fx.krwPerNzd)} KRW</span></div>
+        <div class="fx-item"><span class="fx-label">환율 소스</span><span class="fx-value">${fx.source === 'csv' ? 'CSV 자동 인식' : '수동 입력값'}</span></div>`;
+    }
+    function renderStats(summary){
+      document.getElementById('totalValue').textContent = formatDisplayAmount(summary.total, summary.fx);
+      document.getElementById('holdingCount').textContent = String(summary.holdings.length);
+      document.getElementById('pensionTotalValue').textContent = formatDisplayAmount(summary.settings.activeGrowth + summary.settings.aggressive, summary.fx);
+    }
+    function renderTable(summary){
+      const tbody = document.getElementById('allocationTableBody');
+      const rowsHtml = summary.topCategories.map(item=>`<tr><td>${escapeHtml(item.name)}</td><td>${formatDisplayAmount(item.value, summary.fx)}</td><td>${percent(item.ratio)}</td></tr>`).join('');
+      tbody.innerHTML = rowsHtml + `<tr class="total-row"><td>합계</td><td>${formatDisplayAmount(summary.total, summary.fx)}</td><td>${summary.total>0 ? '100.0%' : '0.0%'}</td></tr>`;
+    }
+    function renderMobileLegend(summary){
+      const container = document.getElementById('mobileLegend');
+      if(!isMobileView()){ container.innerHTML = ''; return; }
+      const items = [...summary.outer, ...summary.inner].filter(item => item.value > 0);
+      container.innerHTML = `<div class="mobile-legend-grid">${items.map(item => `
+        <div class="mobile-legend-item">
+          <span class="mobile-legend-dot" style="background:${item.color}"></span>
+          <div class="mobile-legend-text"><strong>${escapeHtml(item.name)}</strong><br />${escapeHtml(formatDisplayAmount(item.value, summary.fx))}</div>
+        </div>
+      `).join('')}</div>`;
+    }
+    function renderChart(summary){
+      const inner = summary.inner; const outer = summary.outer; const fx = summary.fx; const mobile = isMobileView();
+      const ctx = document.getElementById('allocationChart').getContext('2d');
+      if(chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type:'doughnut',
+        data:{
+          datasets:[
+            { label:'outer', data:outer.map(i=>i.value), labelsMeta:outer.map(i=>i.name), backgroundColor:outer.map(i=>i.color), borderColor:'#ffffff', borderWidth:2, hoverOffset: mobile ? 3 : 6, radius: mobile ? '88%' : '93%', cutout: mobile ? '60%' : '58%' },
+            { label:'inner', data:inner.map(i=>i.value), labelsMeta:inner.map(i=>i.name), backgroundColor:inner.map(i=>i.color), borderColor:'#ffffff', borderWidth:2, hoverOffset: mobile ? 3 : 6, radius: mobile ? '54%' : '56%', cutout: mobile ? '28%' : '26%' }
+          ]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          rotation:-90,
+          circumference:360,
+          layout:{padding: mobile ? 4 : 10},
+          animation:false,
+          plugins:{
+            legend:{
+              display: !mobile,
+              position:'bottom',
+              labels:{
+                boxWidth:12, boxHeight:12, usePointStyle:true, pointStyle:'circle', padding:16,
+                font:{size:12, family:'Noto Sans KR, sans-serif'},
+                generateLabels(chart){ const items=[]; chart.data.datasets.forEach((dataset,datasetIndex)=>{ (dataset.data||[]).forEach((value,index)=>{ if(!value) return; const label=dataset.labelsMeta[index]; if(!label) return; items.push({ text:`${label} (${formatDisplayAmount(value, fx)})`, fillStyle:dataset.backgroundColor[index], strokeStyle:dataset.backgroundColor[index], hidden:false, lineWidth:0, datasetIndex, index }); }); }); return items; }
+              }
+            },
+            tooltip:{ callbacks:{ label(context){ const value=Number(context.raw||0); const label=context.dataset.labelsMeta[context.dataIndex]||''; const datasetTotal=(context.dataset.data||[]).reduce((sum,current)=>sum+Number(current||0),0); const ratio=datasetTotal>0 ? (value/datasetTotal)*100 : 0; return `${label}: ${formatDisplayAmount(value, fx)} (${ratio.toFixed(1)}%)`; } } }
+          }
+        }
+      });
+      renderMobileLegend(summary);
+    }
+
+    function renderAllFromSummary(summary){
+      lastSummary = summary;
+      updateDisplayCurrencyButtons();
+      renderFx(summary.fx);
+      renderStats(summary);
+      renderTable(summary);
+      renderChart(summary);
+      lastViewportMode = isMobileView() ? 'mobile' : 'desktop';
+    }
+    function updateDashboard(){
+      const summary = computeSummary(rows);
+      saveSettings(summary.settings);
+      renderAllFromSummary(summary);
+      showError('');
+      showNotice(summary.fx.source === 'manual' ? 'CSV에 환율 행이 없어 저장된/수동 입력 환율을 사용했습니다.' : 'CSV의 환율 행을 자동으로 적용했습니다.');
+    }
+    function onSettingsChange(){
+      if(!rows.length) { saveSettings(getInputSettings()); updateDisplayCurrencyButtons(); return; }
+      try { updateDashboard(); } catch(error){ showError(error && error.message ? error.message : '계산 중 오류가 발생했습니다.'); }
+    }
+    function switchDisplayCurrency(nextCurrency){
+      displayCurrency = nextCurrency === 'KRW' ? 'KRW' : 'NZD';
+      const settings = getInputSettings();
+      saveSettings(settings);
+      updateDisplayCurrencyButtons();
+      if(lastSummary){ renderAllFromSummary({ ...lastSummary, settings: { ...lastSummary.settings, displayCurrency } }); }
+    }
+    function handleResponsiveRerender(){
+      const currentMode = isMobileView() ? 'mobile' : 'desktop';
+      if(lastSummary && currentMode !== lastViewportMode){ renderAllFromSummary(lastSummary); }
+    }
+    function loadSample(){ showError(''); rows = parseCsv(SAMPLE_CSV); updateDashboard(); }
+
+    document.getElementById('csvFileInput').addEventListener('change', async (event)=>{
+      const file = event.target.files && event.target.files[0]; if(!file) return;
+      try { showError(''); const text = await file.text(); rows = parseCsv(text); updateDashboard(); }
+      catch(error){ showNotice(''); showError(error && error.message ? error.message : 'CSV 파싱 중 오류가 발생했습니다.'); }
+    });
+    document.getElementById('loadDemoBtn').addEventListener('click', loadSample);
+    document.getElementById('displayNzdBtn').addEventListener('click', ()=>switchDisplayCurrency('NZD'));
+    document.getElementById('displayKrwBtn').addEventListener('click', ()=>switchDisplayCurrency('KRW'));
+    ['activeGrowthInput','aggressiveInput','nzdusdInput','nzdkrwInput'].forEach(id=>document.getElementById(id).addEventListener('input', onSettingsChange));
+    window.addEventListener('resize', handleResponsiveRerender);
+
+    setInputsFromStorage();
+    loadSample();
+  </script>
+</body>
+</html>
