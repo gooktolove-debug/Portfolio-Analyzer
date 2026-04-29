@@ -81,8 +81,8 @@
         <div class="card-header">
           <div class="title-row">
             <div>
-              <h1 class="title">개인용 투자 자산배분 MVP (모바일 최적화)</h1>
-              <p class="subtitle">CSV의 <strong>Symbol / Current Price / Quantity</strong>를 읽어서 자산을 계산하고, 기본은 <strong>NZD</strong>로 표시하되 필요 시 <strong>KRW</strong> 표시로 전환할 수 있습니다.</p>
+              <h1 class="title">JS Investment Portfolio Analyzer</h1>
+              <p class="subtitle"></p>
             </div>
             <div class="icon-badge">📱</div>
           </div>
@@ -90,7 +90,7 @@
         <div class="card-body">
           <div class="actions">
             <label class="upload-label"><span>📁 CSV 업로드</span><input type="file" id="csvFileInput" accept=".csv,text/csv" /></label>
-            <button class="btn" id="loadDemoBtn" type="button">🔄 샘플 데이터 불러오기</button>
+
           </div>
           <div class="code-box">
             <p class="mini-title">업데이트된 분류 규칙</p>
@@ -100,7 +100,7 @@ Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
 한국: 숫자 + .KS (단, 위 예외 우선)
 미국: 영어 only
 뉴질랜드: 영어 + .NZ (단, NZC는 Cash 우선)</pre>
-            <p class="small-note">※ 자산 금액 계산은 기본적으로 Current Price × Quantity를 사용합니다. 단, Current Price가 비어 있는 현금 잔액 행(KRW/USD/NZD)은 Quantity를 금액으로 사용합니다. 표시는 NZD/KRW 전환이 가능하지만, 내부 비중 계산은 동일합니다.</p>
+            <p class="small-note"></p>
           </div>
           <div id="noticeBox" class="notice"></div>
           <div id="errorBox" class="error"></div>
@@ -110,7 +110,7 @@ Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
       <section class="card">
         <div class="card-header">
           <h2 class="section-title">연금 입력 + 환율 입력</h2>
-          <p class="section-subtitle">CSV에 환율 행이 없으면 아래 입력값을 사용합니다. 입력값은 브라우저에 저장됩니다.</p>
+          <p class="section-subtitle"></p>
         </div>
         <div class="card-body">
           <div class="info-box" style="margin-bottom:16px;">
@@ -146,7 +146,7 @@ Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
         <div class="toolbar-row">
           <div>
             <h2 class="section-title">카테고리 비중 테이블</h2>
-            <p class="section-subtitle">내부 계산 기준은 NZD이며, 화면 표시는 NZD 또는 KRW로 전환할 수 있습니다.</p>
+            <p class="section-subtitle"></p>
           </div>
           <div>
             <div class="currency-toggle" role="group" aria-label="표시 통화 선택">
@@ -168,7 +168,7 @@ Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
     <section class="card">
       <div class="card-header">
         <h2 class="section-title">2중 구조 파이차트</h2>
-        <p class="section-subtitle">안쪽: 연금 / 안전자산 / 위험자산 · 바깥쪽: Active Growth / Aggressive / 채권 / Gold / Cash / 미국 / 한국 / 뉴질랜드</p>
+        <p class="section-subtitle"></p>
       </div>
       <div class="card-body">
         <div class="grid grid-bottom">
