@@ -61,7 +61,7 @@ Deposit 자동인식: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     // Milford latest monthly fact sheet as at 30 Apr 2026. Percentages must sum to ~100 for each fund.
     // Active Growth: International Equities is mapped to 기타 because the fact sheet page exposes asset allocation but not full region split.
     const MILFORD_LOOKTHROUGH = {
-      activeGrowth: { label:'Active Growth', asOf:'2026-04-30', exposure:{ '미국':26.115, '한국':0, '호주/뉴질랜드':15.44, '채권':23.35, '금':0.20, 'Cash':8.78, '기타':52.23 } },
+      activeGrowth: { label:'Active Growth', asOf:'2026-04-30', exposure:{ '미국':26.115, '한국':0, '호주/뉴질랜드':15.44, '채권':23.35, '금':0.20, 'Cash':8.78, '기타':26.115 } },
       aggressive: { label:'Aggressive', asOf:'2026-04-30', exposure:{ '미국':53.29, '한국':0, '호주/뉴질랜드':20.21, '채권':0.74, '금':0.23, 'Cash':0.98, '기타':24.55 } }
     };
     const FX_SYMBOLS = new Set(['KRW=X','NZDKRW=X','NZDUSD=X']);
