@@ -3,121 +3,670 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>개인용 투자 자산배분 MVP (모바일 최적화)</title>
-  <meta name="description" content="CSV 업로드 기반 개인용 투자 자산배분 대시보드 - NZD/KRW 표시 전환, Milford 연금 Look-through Exposure 포함" />
+  <title>JS Capital · Portfolio Intelligence</title>
+  <meta name="description" content="CSV 업로드 기반 개인용 투자 자산배분 대시보드 - NZD/KRW 전환, Milford 연금 Look-through, ETF 구성종목 Look-through Top Holdings 포함" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --line-soft:#f1f5f9;
-      --accent:#2563eb; --accent-soft:#dbeafe; --danger:#dc2626; --shadow:0 10px 30px rgba(15,23,42,.08); --radius:20px;
+    :root{
+      --bg:#eef2f9; --bg-2:#f7f9fc; --card:#ffffff; --text:#0b1220; --muted:#64748b; --muted-2:#94a3b8;
+      --line:#e6eaf1; --line-soft:#f1f4f9; --radius:22px; --radius-sm:14px;
+      --brand:#4f46e5; --brand-2:#7c3aed; --brand-soft:#eef0ff; --accent:#2563eb;
+      --ink:#0b1220; --ink-2:#111a2e;
+      --ok:#059669; --ok-soft:#e7f7f0; --warn:#d97706; --danger:#dc2626; --danger-soft:#fef2f2;
+      --shadow:0 18px 40px -18px rgba(15,23,42,.28); --shadow-sm:0 8px 24px -14px rgba(15,23,42,.25);
+      /* chart category colors */
       --pension:#8b5cf6; --risk:#ef4444; --safe:#10b981; --us:#3b82f6; --kr:#f97316; --nz:#0f766e;
       --bond:#06b6d4; --gold:#eab308; --cash:#84cc16; --active-growth:#a78bfa; --aggressive:#c084fc; --other:#64748b;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
-    body{padding:24px;overflow-x:hidden}.container{max-width:1280px;margin:0 auto}.grid{display:grid;gap:24px}.grid-top{grid-template-columns:1.15fr .85fr}.grid-bottom{grid-template-columns:1.15fr .85fr;align-items:start}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-width:0}.card-header{padding:24px 24px 0}.card-body{padding:24px}
-    .title-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.title{font-size:30px;font-weight:800;margin:0;letter-spacing:-.02em}.subtitle{margin:10px 0 0;color:var(--muted);line-height:1.7}.icon-badge{min-width:56px;height:56px;border-radius:18px;background:#f1f5f9;display:grid;place-items:center;font-size:26px}
-    .section-title{margin:0;font-size:22px;font-weight:800}.section-subtitle{margin:8px 0 0;color:var(--muted);line-height:1.6;word-break:keep-all}.actions{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:18px}
-    .upload-label,.btn{border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--text);font-weight:700;cursor:pointer;transition:.2s ease;font-size:15px;min-width:0}.upload-label:hover,.btn:hover{transform:translateY(-1px);background:#f8fafc}.upload-label input{display:none}
-    .code-box{background:#020617;color:#e2e8f0;border-radius:16px;padding:16px;overflow:auto}.code-box pre{margin:8px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.75;color:#cbd5e1}.mini-title{font-size:14px;font-weight:800;margin:0}.small-note{font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.7}
-    .error,.notice{display:none;margin-top:16px;border-radius:16px;padding:12px 16px;font-size:14px;line-height:1.6}.error{border:1px solid #fecaca;background:#fef2f2;color:#b91c1c}.notice{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8}.error.show,.notice.show{display:block}
-    .toolbar-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}.currency-toggle{display:inline-flex;gap:8px;padding:6px;border:1px solid var(--line);background:#f8fafc;border-radius:999px;max-width:100%}.toggle-btn{border:none;background:transparent;color:var(--muted);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:800;cursor:pointer;transition:.2s ease}.toggle-btn.active{background:var(--accent);color:#fff}.toggle-note{font-size:12px;color:var(--muted)}
-    .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff}thead{background:#f1f5f9}th,td{padding:14px 16px;text-align:left}th:nth-child(2),td:nth-child(2),th:nth-child(3),td:nth-child(3){text-align:right}tbody tr{border-top:1px solid var(--line-soft)}tbody tr.total-row{border-top:2px solid var(--line);background:#f8fafc;font-weight:800}
-    .chart-wrap{height:500px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}.chart-wrap canvas{max-width:100%!important;max-height:100%!important}.mobile-legend{display:none}.mobile-legend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}.mobile-legend-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}.mobile-legend-dot{width:10px;height:10px;border-radius:999px;flex:0 0 10px}.mobile-legend-text{font-size:12px;line-height:1.35;color:var(--text);min-width:0;word-break:break-word}
-    .side-grid{display:grid;gap:16px}.info-box{background:#f8fafc;border-radius:16px;padding:16px;border:1px solid var(--line);min-width:0}.info-box h3{margin:0 0 12px;font-size:15px}.info-box ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.85}.legend-note{margin-top:12px;font-size:13px;color:var(--muted);line-height:1.6}.pill-list,.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.pill,.chip{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}.chip{background:#eef2ff;color:#4338ca}
-    .stats-grid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}.stat-card{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;min-width:0}.stat-label{font-size:12px;color:var(--muted);margin-bottom:6px}.stat-value{font-size:20px;font-weight:800;word-break:break-word}.fx-list{display:grid;gap:10px}.fx-item{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px}.fx-label{color:var(--muted)}.fx-value{font-weight:800;text-align:right}
-    .pension-grid,.fx-input-grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}.field{display:grid;gap:8px}.field label{font-size:13px;font-weight:700;color:var(--muted)}.field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);font-size:15px;outline:none;background:#fff}.field input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}.hint{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}
-    @media(max-width:980px){body{padding:12px}.grid-top,.grid-bottom,.actions,.pension-grid,.stats-grid,.fx-input-grid{grid-template-columns:1fr}.title{font-size:24px}.card-header{padding:18px 18px 0}.card-body{padding:18px}.chart-wrap{height:320px}.toolbar-row{align-items:flex-start}.section-subtitle{font-size:14px;line-height:1.75}.mobile-legend{display:block}.code-box{padding:14px}.info-box{padding:14px}.icon-badge{min-width:48px;height:48px;font-size:22px}.pill{font-size:11px;padding:6px 8px}table{font-size:14px}th,td{padding:12px 10px}}
-    @media(max-width:520px){body{padding:10px}.title{font-size:22px}.section-title{font-size:18px}.chart-wrap{height:280px}.mobile-legend-grid{grid-template-columns:1fr}.currency-toggle{width:100%;justify-content:space-between}.toggle-btn{flex:1}.toolbar-row{gap:12px}}
+    html,body{margin:0;padding:0;color:var(--text);
+      font-family:"Inter","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo",sans-serif;
+      background:
+        radial-gradient(1200px 600px at 15% -10%, #e9edfb 0%, rgba(233,237,251,0) 55%),
+        radial-gradient(1000px 700px at 100% 0%, #eae7fb 0%, rgba(234,231,251,0) 50%),
+        linear-gradient(180deg,#f7f9fc 0%, #eef2f9 100%);
+      background-attachment:fixed;}
+    body{min-height:100vh;padding:0 0 48px;overflow-x:hidden}
+    .container{max-width:1320px;margin:0 auto;padding:0 24px}
+    a{color:inherit}
+
+    /* ---------- Top bar ---------- */
+    .topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(160%) blur(12px);
+      background:rgba(11,18,32,.86);border-bottom:1px solid rgba(255,255,255,.06)}
+    .topbar-inner{max-width:1320px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;
+      background:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);box-shadow:0 6px 16px -6px rgba(124,58,237,.7)}
+    .brand-name{color:#fff;font-weight:800;font-size:17px;letter-spacing:-.01em;line-height:1.1}
+    .brand-sub{color:#9fb0d0;font-size:12px;font-weight:500;margin-top:2px}
+    .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+    .seg button{border:0;background:transparent;color:#c8d2e8;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s ease}
+    .seg button.active{background:#fff;color:var(--ink)}
+    .ghost-btn{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#e7ecf7;padding:8px 14px;border-radius:12px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s ease;display:inline-flex;align-items:center;gap:7px}
+    .ghost-btn:hover{background:rgba(255,255,255,.12)}
+
+    /* ---------- Hero ---------- */
+    .hero{margin-top:28px;border-radius:26px;overflow:hidden;position:relative;color:#fff;
+      background:linear-gradient(135deg,#131c34 0%, #1b2246 45%, #2a1f56 100%);
+      box-shadow:0 30px 60px -30px rgba(20,20,60,.55)}
+    .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(600px 300px at 88% -20%, rgba(124,58,237,.45), transparent 60%),
+                 radial-gradient(500px 260px at 5% 120%, rgba(37,99,235,.35), transparent 60%)}
+    .hero-inner{position:relative;z-index:1;padding:34px 36px;display:grid;grid-template-columns:1.25fr .9fr;gap:28px;align-items:center}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#c4b6ff;background:rgba(124,58,237,.18);border:1px solid rgba(163,143,255,.3);padding:6px 12px;border-radius:999px}
+    .hero h1{margin:16px 0 0;font-size:34px;line-height:1.12;font-weight:800;letter-spacing:-.02em}
+    .hero p{margin:12px 0 0;color:#c6d0e6;line-height:1.7;max-width:560px}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+    .btn-primary{display:inline-flex;align-items:center;gap:9px;border:0;cursor:pointer;font-weight:800;font-size:14px;color:#fff;
+      padding:13px 20px;border-radius:14px;background:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);
+      box-shadow:0 14px 30px -12px rgba(124,58,237,.8);transition:.2s ease}
+    .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.06)}
+    .btn-primary input{display:none}
+    .btn-line{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#eaeefb;padding:13px 18px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;transition:.2s}
+    .btn-line:hover{background:rgba(255,255,255,.14)}
+    .hero-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .kpi{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px}
+    .kpi .k-label{font-size:12px;color:#a9b6d4;font-weight:600}
+    .kpi .k-value{font-size:24px;font-weight:800;margin-top:8px;letter-spacing:-.01em;word-break:break-word}
+    .kpi .k-value.small{font-size:19px}
+
+    /* ---------- Layout ---------- */
+    .section-space{margin-top:26px}
+    .grid{display:grid;gap:24px}
+    .grid-2{grid-template-columns:1.15fr .85fr}
+    .grid-chart{grid-template-columns:1.15fr .85fr;align-items:start}
+
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;min-width:0}
+    .card-pad{padding:26px}
+    .sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .sec-eyebrow{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);display:flex;align-items:center;gap:8px}
+    .sec-eyebrow .dot{width:7px;height:7px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+    .sec-title{margin:8px 0 0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+    .sec-sub{margin:8px 0 0;color:var(--muted);line-height:1.65;font-size:14px;word-break:keep-all}
+
+    .info-box{background:linear-gradient(180deg,#fbfcfe 0%,#f6f8fc 100%);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;min-width:0}
+    .info-box h3{margin:0 0 12px;font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .info-box ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.85;font-size:13.5px}
+    .legend-note{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.7}
+
+    .field{display:grid;gap:8px}
+    .field label{font-size:13px;font-weight:700;color:var(--muted)}
+    .field input, .field select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);font-size:15px;outline:none;background:#fff;font-family:inherit}
+    .field input:focus, .field select:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+    .grid-2col{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+    .hint{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}
+    .upload-label{border:1px dashed #c7cede;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fbfcff;color:var(--text);font-weight:700;cursor:pointer;transition:.2s ease;font-size:14.5px}
+    .upload-label:hover{border-color:var(--brand);background:var(--brand-soft)}
+    .upload-label input{display:none}
+
+    .code-box{background:#0b1220;color:#e2e8f0;border-radius:14px;padding:16px;overflow:auto;border:1px solid #1e293b}
+    .code-box .mini-title{font-size:12.5px;font-weight:800;margin:0;color:#a5b4fc;text-transform:uppercase;letter-spacing:.08em}
+    .code-box pre{margin:8px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.75;color:#cbd5e1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .small-note{font-size:12px;color:var(--muted-2);margin-top:10px;line-height:1.7}
+
+    .error,.notice{display:none;margin-top:16px;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6}
+    .error{border:1px solid #fecaca;background:var(--danger-soft);color:#b91c1c}
+    .notice{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8}
+    .error.show,.notice.show{display:block}
+
+    /* stats */
+    .stats-grid{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+    .stat-card{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc);border-radius:16px;padding:16px;min-width:0}
+    .stat-label{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+    .stat-value{font-size:20px;font-weight:800;word-break:break-word}
+    .fx-list{display:grid;gap:10px}
+    .fx-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:14px}
+    .fx-label{color:var(--muted)}.fx-value{font-weight:800;text-align:right}
+
+    /* charts */
+    .chart-wrap{height:480px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .chart-wrap canvas{max-width:100%!important;max-height:100%!important}
+    .mobile-legend{display:none}
+    .mobile-legend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:12px}
+    .mobile-legend-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}
+    .mobile-legend-dot{width:10px;height:10px;border-radius:999px;flex:0 0 10px}
+    .mobile-legend-text{font-size:12px;line-height:1.35;color:var(--text);min-width:0;word-break:break-word}
+    .side-grid{display:grid;gap:16px}
+
+    /* tables */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+    thead{background:#f4f6fb}
+    th,td{padding:14px 16px;text-align:left;font-size:14px}
+    th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:800}
+    th.num,td.num{text-align:right;font-variant-numeric:tabular-nums}
+    tbody tr{border-top:1px solid var(--line-soft)}
+    tbody tr:hover{background:#fafbff}
+    tbody tr.total-row{border-top:2px solid var(--line);background:#f6f8fc;font-weight:800}
+    .rank-badge{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,#94a3b8,#64748b)}
+    .rank-badge.top{background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+    .tkr{font-size:12px;color:var(--muted-2);font-weight:600}
+    .src-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+    .src-chip{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--brand-soft);color:#4338ca;border:1px solid #e0e2ff}
+    .src-chip.direct{background:#e7f7f0;color:#047857;border-color:#c7ecdb}
+
+    .bar{height:7px;border-radius:999px;background:#eef1f7;overflow:hidden;margin-top:6px}
+    .bar > span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+
+    /* ETF cards */
+    .etf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .etf-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+    .etf-card-head{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:linear-gradient(180deg,#fbfcff,#f5f7fd);border-bottom:1px solid var(--line)}
+    .etf-name{font-weight:800;font-size:14.5px}
+    .etf-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+    .etf-val{text-align:right;font-size:12px;color:var(--muted)}
+    .etf-val strong{display:block;font-size:14px;color:var(--text)}
+    .etf-hold{display:flex;align-items:center;gap:10px;padding:9px 16px;border-top:1px solid var(--line-soft);font-size:13px}
+    .etf-hold:first-of-type{border-top:0}
+    .etf-hold .h-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .etf-hold .h-w{font-weight:700;font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+    .etf-hold .h-bar{width:70px;flex:0 0 70px}
+
+    .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px}
+    .badge.ok{background:var(--ok-soft);color:#047857}
+    .badge.warn{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+
+    .btn{border:1px solid var(--line);border-radius:12px;padding:11px 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--text);font-weight:700;cursor:pointer;transition:.18s ease;font-size:13.5px;font-family:inherit}
+    .btn:hover{background:#f6f8fc;border-color:#cfd7e6}
+    .btn.brand{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:0}
+    .btn.brand:hover{filter:brightness(1.06)}
+    .btn.danger{color:#b91c1c;border-color:#fecaca}
+    .btn.sm{padding:7px 11px;font-size:12.5px}
+    .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .manager-list{display:grid;gap:10px;margin-top:6px}
+    .manager-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+    .manager-item .m-name{font-weight:700;font-size:14px}
+    .manager-item .m-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+    .coverage-note{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .pill{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;background:#eef2f9;color:#475569;border:1px solid var(--line)}
+    .pill.good{background:var(--ok-soft);color:#047857;border-color:#c7ecdb}
+    .pill.miss{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+
+    .footer{margin-top:34px;text-align:center;color:var(--muted-2);font-size:12px;line-height:1.7}
+
+    dialog{border:0;border-radius:20px;padding:0;box-shadow:0 40px 80px -30px rgba(15,23,42,.5);max-width:520px;width:calc(100% - 32px)}
+    dialog::backdrop{background:rgba(11,18,32,.5);backdrop-filter:blur(3px)}
+    .dlg-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+    .dlg-head h3{margin:0;font-size:17px;font-weight:800}
+    .dlg-body{padding:20px 22px;max-height:70vh;overflow:auto}
+    .dlg-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+    .holdings-editor{display:grid;gap:8px}
+    .he-row{display:grid;grid-template-columns:1fr 1.4fr 84px 34px;gap:8px;align-items:center}
+    .he-row input{padding:9px 10px;font-size:13px}
+    .he-x{border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;height:38px;color:#b91c1c;font-weight:800}
+
+    @media(max-width:1024px){
+      .hero-inner{grid-template-columns:1fr;gap:22px}
+      .grid-2,.grid-chart{grid-template-columns:1fr}
+      .etf-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:820px){
+      .container{padding:0 14px}
+      .hero{margin-top:18px}.hero-inner{padding:26px 22px}.hero h1{font-size:26px}
+      .stats-grid{grid-template-columns:1fr}.grid-2col{grid-template-columns:1fr}
+      .chart-wrap{height:320px}.mobile-legend{display:block}
+      .card-pad{padding:18px}.sec-title{font-size:19px}
+      .topbar-inner{padding:12px 14px}.brand-sub{display:none}
+      th,td{padding:12px 12px;font-size:13.5px}
+    }
+    @media(max-width:520px){
+      .hero h1{font-size:22px}.chart-wrap{height:280px}.mobile-legend-grid{grid-template-columns:1fr}
+      .hero-kpis{grid-template-columns:1fr}
+      .he-row{grid-template-columns:1fr 1fr 70px 30px}
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="grid grid-top" style="margin-bottom:24px;">
-      <section class="card"><div class="card-header"><div class="title-row"><div><h1 class="title">JS Investment Portfolio Analyzer</h1></div><div class="icon-badge">📱</div></div></div><div class="card-body"><div class="actions"><label class="upload-label"><span>📁 CSV 업로드</span><input type="file" id="csvFileInput" accept=".csv,text/csv" /></label></div><div class="code-box"><p class="mini-title">업데이트된 분류 규칙</p><pre>Bond: IEF, 305080.KS
-Gold: IAUM, 0072R0.KS
-Cash: KRW, USD, NZD, NZC, NZC.NZ, SGOV
-Deposit 자동인식: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
-한국: 숫자 + .KS (단, 위 예외 우선)
-미국: 영어 only, 360750.KS
-뉴질랜드: 영어 + .NZ (단, NZC는 Cash 우선)
-신규: 국가별 Exposure = CSV 직접보유 + Milford 연금 Look-through</pre></div><div id="noticeBox" class="notice"></div><div id="errorBox" class="error"></div></div></section>
-      <section class="card"><div class="card-header"><h2 class="section-title">연금 입력 + 환율 입력</h2></div><div class="card-body"><div class="info-box" style="margin-bottom:16px;"><h3>연금 수동 입력 (NZD 기준 입력)</h3><div class="pension-grid"><div class="field"><label for="activeGrowthInput">Active Growth (NZD)</label><input id="activeGrowthInput" type="number" min="0" step="0.01" placeholder="예: 12000" /></div><div class="field"><label for="aggressiveInput">Aggressive (NZD)</label><input id="aggressiveInput" type="number" min="0" step="0.01" placeholder="예: 8000" /></div></div></div><div class="info-box" style="margin-bottom:16px;">
-<h3>KiwiSaver Fact Sheet 업데이트</h3>
-<div class="field"><label for="milfordPdfInput">Active Growth + Aggressive PDF (2개 동시 선택)</label><input id="milfordPdfInput" type="file" accept="application/pdf,.pdf" multiple /></div>
-
-<div id="milfordUploadStatus" class="hint" style="margin-top:10px;font-weight:700;"></div>
-</div><div class="info-box" style="margin-bottom:16px;"><h3>현재 적용 환율</h3><div class="fx-list" id="fxList"><div class="fx-item"><span class="fx-label">1 NZD =</span><div class="field" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;max-width:220px;"><input id="nzdusdInput" type="number" min="0" step="0.000001" aria-label="1 NZD 당 USD 환율" /><strong>USD</strong></div></div><div class="fx-item"><span class="fx-label">1 NZD =</span><div class="field" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;max-width:220px;"><input id="nzdkrwInput" type="number" min="0" step="0.01" aria-label="1 NZD 당 KRW 환율" /><strong>KRW</strong></div></div><div class="fx-item"><span class="fx-label">환율 소스</span><span class="fx-value" id="fxSourceValue">저장된/수동 입력</span></div></div><div class="hint">CSV 업로드 시 환율이 자동 입력됩니다. 필요한 경우 위 값을 직접 수정할 수 있습니다.</div></div><div class="stats-grid"><div class="stat-card"><div class="stat-label">총자산</div><div class="stat-value" id="totalValue">0</div></div><div class="stat-card"><div class="stat-label">CSV 종목 수</div><div class="stat-value" id="holdingCount">0</div></div><div class="stat-card"><div class="stat-label">연금 합계</div><div class="stat-value" id="pensionTotalValue">0</div></div></div></div></section>
-    </div>
-    <section class="card" style="margin-bottom:24px;"><div class="card-header"><h2 class="section-title">2중 구조 파이차트</h2><p class="section-subtitle">Inner = 연금/안전자산/위험자산, Outer = 세부 카테고리</p></div><div class="card-body"><div class="grid grid-bottom"><div><div class="chart-wrap"><canvas id="allocationChart"></canvas></div><div id="mobileLegend" class="mobile-legend"></div></div><div class="side-grid"><div class="info-box"><h3>파이차트 매칭 규칙</h3><ul><li><strong>연금</strong> ↔ <strong>Active Growth, Aggressive</strong></li><li><strong>안전자산</strong> ↔ <strong>채권, Gold, Cash</strong></li><li><strong>위험자산</strong> ↔ <strong>미국, 한국, 뉴질랜드</strong></li></ul><div class="chip-row"></div></div></div></div></div></section>
-    <section class="card" style="margin-bottom:24px;">
-      <div class="card-header">
-        <h2 class="section-title">국가별 Exposure 파이차트</h2>
-        <p class="section-subtitle">직투 + Milford Active Growth/Aggressive 연금의 Look-through Exposure를 합산합니다.</p>
+  <!-- ================= TOP BAR ================= -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">JS</div>
+        <div>
+          <div class="brand-name">JS Capital</div>
+          <div class="brand-sub">Portfolio Intelligence · Look-through Analytics</div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="grid grid-bottom">
+      <div class="topbar-actions">
+        <div class="seg" role="group" aria-label="표시 통화 선택">
+          <button data-cur="NZD" class="active" type="button">NZD</button>
+          <button data-cur="KRW" type="button">KRW</button>
+        </div>
+        <button id="sampleBtn" class="ghost-btn" type="button">📊 샘플 데이터</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <span class="eyebrow">📈 Personal Wealth Dashboard</span>
+          <div class="hero-cta" style="margin-top:24px">
+            <label class="btn-primary"><span>📁 CSV 업로드</span><input type="file" id="csvFileInput" accept=".csv,text/csv" /></label>
+            <label class="btn-line"><span>📄 KiwiSaver Fact Sheet (2개)</span><input type="file" id="milfordPdfInput" accept="application/pdf,.pdf" multiple style="display:none" /></label>
+          </div>
+          <div id="milfordUploadStatus" class="hint" style="color:#c6d0e6;margin-top:14px;font-weight:600;"></div>
+        </div>
+        <div class="hero-kpis">
+          <div class="kpi"><div class="k-label">총자산</div><div class="k-value" id="totalValue">–</div></div>
+          <div class="kpi"><div class="k-label">연금 합계</div><div class="k-value small" id="pensionTotalValue">–</div></div>
+          <div class="kpi"><div class="k-label">CSV 종목 수</div><div class="k-value" id="holdingCount">0</div></div>
+          <div class="kpi"><div class="k-label">Look-through 종목 수</div><div class="k-value" id="lookthroughCount">0</div></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="noticeBox" class="notice"></div>
+    <div id="errorBox" class="error"></div>
+
+    <!-- ================= INPUTS ================= -->
+    <div class="grid grid-2 section-space">
+      <section class="card">
+        <div class="card-pad">
+          <div class="sec-head"><div>
+            <div class="sec-eyebrow"><span class="dot"></span>Data & Rules</div>
+            <h2 class="sec-title">입력 데이터 & 분류 규칙</h2>
+            <p class="sec-sub">CSV의 Note가 <strong>BUY</strong>인 항목만 자산으로 집계됩니다.</p>
+          </div></div>
+          <div class="code-box">
+            <p class="mini-title">자동 분류 규칙</p>
+<pre>Bond   : IEF, 305080.KS
+Gold   : IAUM, 0072R0.KS
+Cash   : KRW, USD, NZD, NZC, NZC.NZ, SGOV
+Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
+한국    : 숫자 + .KS (예외 우선)
+미국    : 영어 only, 360750.KS
+뉴질랜드 : 영어 + .NZ (NZC는 Cash 우선)
+국가별 Exposure = 직접보유 + Milford 연금 Look-through
+종목 Exposure  = 직접보유 + ETF 구성종목 Look-through</pre>
+          </div>
+          <p class="small-note">💡 ETF 구성종목(Top 10)은 아래 <strong>ETF 구성종목 관리</strong>에서 수정·추가할 수 있습니다. 데이터는 이 기기 브라우저에 저장됩니다.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-pad">
+          <div class="sec-head"><div>
+            <div class="sec-eyebrow"><span class="dot"></span>Manual Inputs</div>
+            <h2 class="sec-title">연금 & 환율 입력</h2>
+          </div></div>
+
+          <div class="info-box" style="margin-bottom:14px;">
+            <h3>💰 연금 수동 입력 (NZD)</h3>
+            <div class="grid-2col">
+              <div class="field"><label for="activeGrowthInput">Active Growth</label><input id="activeGrowthInput" type="number" min="0" step="0.01" placeholder="예: 12000" /></div>
+              <div class="field"><label for="aggressiveInput">Aggressive</label><input id="aggressiveInput" type="number" min="0" step="0.01" placeholder="예: 8000" /></div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <h3>💱 현재 적용 환율</h3>
+            <div class="fx-list">
+              <div class="fx-item"><span class="fx-label">1 NZD =</span>
+                <div class="field" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;max-width:220px;">
+                  <input id="nzdusdInput" type="number" min="0" step="0.000001" aria-label="NZD 당 USD" /><strong>USD</strong></div></div>
+              <div class="fx-item"><span class="fx-label">1 NZD =</span>
+                <div class="field" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;max-width:220px;">
+                  <input id="nzdkrwInput" type="number" min="0" step="0.01" aria-label="NZD 당 KRW" /><strong>KRW</strong></div></div>
+              <div class="fx-item"><span class="fx-label">환율 소스</span><span class="fx-value" id="fxSourceValue">저장/수동 입력</span></div>
+            </div>
+            <div class="hint">CSV 업로드 시 환율이 자동 입력됩니다. 필요 시 직접 수정할 수 있습니다.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= 2중 구조 파이 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div>
+          <div class="sec-eyebrow"><span class="dot"></span>Asset Allocation</div>
+          <h2 class="sec-title">2중 구조 자산배분</h2>
+          <p class="sec-sub">Inner = 연금 / 안전자산 / 위험자산, Outer = 세부 카테고리</p>
+        </div></div>
+        <div class="grid grid-chart">
           <div>
-            <div class="chart-wrap"><canvas id="exposureChart"></canvas></div>
-            <div id="exposureMobileLegend" class="mobile-legend"></div>
+            <div class="chart-wrap"><canvas id="allocationChart"></canvas></div>
+            <div id="mobileLegend" class="mobile-legend"></div>
           </div>
           <div class="side-grid">
-            <div class="info-box">
-              <h3>Milford Look-through 기준</h3>
-              <div id="milfordInfo" class="legend-note"></div>
+            <div class="info-box"><h3>🧭 매칭 규칙</h3>
+              <ul>
+                <li><strong>연금</strong> ↔ Active Growth, Aggressive</li>
+                <li><strong>안전자산</strong> ↔ 채권, Gold, Cash</li>
+                <li><strong>위험자산</strong> ↔ 미국, 한국, 뉴질랜드</li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
     </section>
-    <section class="card" style="margin-bottom:24px;"><div class="card-header"><div class="toolbar-row"><div><h2 class="section-title">국가별 Exposure 비중 테이블</h2><p class="section-subtitle"></p></div><div><div class="currency-toggle" role="group" aria-label="표시 통화 선택"><button id="displayNzdBtn" class="toggle-btn active" type="button">NZD</button><button id="displayKrwBtn" class="toggle-btn" type="button">KRW</button></div><div class="toggle-note">기본 표시 통화: NZD</div></div></div></div><div class="card-body table-wrap"><table><thead><tr><th>카테고리</th><th id="amountHeader">금액 (NZD)</th><th>전체 대비 비율</th></tr></thead><tbody id="allocationTableBody"></tbody></table></div></section>
+
+    <!-- ================= 국가별 Exposure 파이 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div>
+          <div class="sec-eyebrow"><span class="dot"></span>Geographic Exposure</div>
+          <h2 class="sec-title">국가별 Exposure</h2>
+          <p class="sec-sub">직접보유 + Milford Active Growth/Aggressive 연금의 Look-through Exposure 합산</p>
+        </div></div>
+        <div class="grid grid-chart">
+          <div>
+            <div class="chart-wrap"><canvas id="exposureChart"></canvas></div>
+            <div id="exposureMobileLegend" class="mobile-legend"></div>
+          </div>
+          <div class="side-grid">
+            <div class="info-box"><h3>🏦 Milford Look-through 기준</h3><div id="milfordInfo" class="legend-note"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 국가별 Exposure 테이블 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div>
+          <div class="sec-eyebrow"><span class="dot"></span>Breakdown Table</div>
+          <h2 class="sec-title">국가별 Exposure 비중 테이블</h2>
+        </div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>카테고리</th><th class="num" id="amountHeader">금액 (NZD)</th><th class="num">전체 대비</th></tr></thead>
+            <tbody id="allocationTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= NEW: 종목 Look-through Top 10 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div>
+          <div class="sec-eyebrow"><span class="dot"></span>Look-through · Highlight</div>
+          <h2 class="sec-title">직투 종목 Exposure Top 10</h2>
+          <p class="sec-sub">개별 종목 + 보유 ETF의 상위 구성종목을 <strong>합산</strong>해, 실제로 가장 많이 노출된 개별 기업을 보여줍니다.</p>
+        </div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:56px;">#</th><th>종목</th>
+              <th class="num" id="ltAmountHeader">Exposure (NZD)</th>
+              <th class="num">직투 대비</th><th style="width:130px;">비중</th>
+            </tr></thead>
+            <tbody id="lookthroughTableBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">CSV를 업로드하면 종목별 Look-through Exposure가 표시됩니다.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="coverage-note" id="coverageNote"></div>
+      </div>
+    </section>
+
+    <!-- ================= NEW: ETF별 구성종목 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div>
+          <div class="sec-eyebrow"><span class="dot"></span>Constituents</div>
+          <h2 class="sec-title">보유 ETF별 구성종목 (Top 10)</h2>
+          <p class="sec-sub">현재 포트폴리오에 담긴 ETF 각각의 상위 10개 구성종목과 비중입니다.</p>
+        </div></div>
+        <div id="etfConstituentsGrid" class="etf-grid"></div>
+        <p id="etfConstituentsEmpty" class="small-note" style="text-align:center;padding:8px 0;">CSV를 업로드하고, 보유한 ETF가 아래 <strong>ETF 구성종목 관리</strong>에 등록되어 있으면 여기에 표시됩니다.</p>
+      </div>
+    </section>
+
+    <!-- ================= NEW: ETF 구성종목 관리 ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head">
+          <div>
+            <div class="sec-eyebrow"><span class="dot"></span>Holdings Database</div>
+            <h2 class="sec-title">ETF 구성종목 관리</h2>
+            <p class="sec-sub">각 ETF의 상위 10개 구성종목(티커·비중%)을 직접 관리합니다. Look-through 계산에 사용됩니다.</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn brand sm" id="addEtfBtn" type="button">＋ ETF 추가</button>
+            <button class="btn sm" id="importEtfBtn" type="button">⬆ JSON 가져오기</button>
+            <button class="btn sm" id="exportEtfBtn" type="button">⬇ JSON 내보내기</button>
+            <button class="btn sm" id="resetEtfBtn" type="button">↺ 기본값</button>
+          </div>
+        </div>
+        <div id="etfManagerList" class="manager-list"></div>
+        <p class="small-note">데이터 출처 예: stockanalysis.com / portfolioslab.com / 운용사 월간 Fact Sheet. 비중은 발표 시점 기준이므로 주기적으로 갱신하세요.</p>
+      </div>
+    </section>
+
+    <p class="footer">© JS Capital · Portfolio Intelligence · 모든 데이터는 이 기기 브라우저(localStorage)에만 저장됩니다. 투자 판단의 참고용이며 투자 조언이 아닙니다.</p>
   </div>
+
+  <!-- ETF Editor Dialog -->
+  <dialog id="etfDialog">
+    <form method="dialog">
+      <div class="dlg-head"><h3 id="etfDialogTitle">ETF 추가</h3><button class="btn sm" value="cancel">✕</button></div>
+      <div class="dlg-body">
+        <div class="grid-2col" style="margin-bottom:14px;">
+          <div class="field"><label>티커 (CSV Symbol과 동일)</label><input id="etfTicker" placeholder="예: QQQ, 102110.KS" /></div>
+          <div class="field"><label>기준일 (as of)</label><input id="etfAsOf" placeholder="예: 2026-07-24" /></div>
+        </div>
+        <div class="field" style="margin-bottom:8px;"><label>ETF 이름</label><input id="etfFullName" placeholder="예: Invesco QQQ Trust" /></div>
+        <label style="font-size:13px;font-weight:700;color:var(--muted);display:block;margin:14px 0 8px;">구성종목 (상위 10개)</label>
+        <div class="holdings-editor" id="holdingsEditor"></div>
+        <button class="btn sm" id="addHoldingRow" type="button" style="margin-top:10px;">＋ 종목 행 추가</button>
+        <p class="hint" id="weightSumHint"></p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" value="cancel" type="submit">취소</button>
+        <button class="btn brand" id="saveEtfBtn" type="button">저장</button>
+      </div>
+    </form>
+  </dialog>
+  <input type="file" id="etfImportInput" accept="application/json,.json" style="display:none" />
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
+    /* ============ constants ============ */
     const DEFAULT_FX = { usdPerNzd: 0.5910864, krwPerNzd: 870.9 };
     const DEFAULT_DISPLAY_CURRENCY = 'NZD';
-    const MOBILE_BREAKPOINT = 980;
-    const SAMPLE_CSV = `Symbol,Current Price,Quantity\nUSD,,500\n0072R0.KS,14765,60\nIAUM,46.65,4\n305080.KS,13330,252\nSPYG,112.94,7\n102110.KS,100320,19`;
+    const MOBILE_BREAKPOINT = 820;
+    const SAMPLE_CSV = `Symbol,Current Price,Quantity\nUSD,,500\n0072R0.KS,14765,60\nIAUM,46.65,4\n305080.KS,13330,252\nSPYG,112.94,7\nQQQ,682.12,3\n102110.KS,107285,19\nNVDA,178.5,10`;
     const COLORS = { pension:getCss('--pension'), safe:getCss('--safe'), risk:getCss('--risk'), us:getCss('--us'), kr:getCss('--kr'), nz:getCss('--nz'), bond:getCss('--bond'), gold:getCss('--gold'), cash:getCss('--cash'), activeGrowth:getCss('--active-growth'), aggressive:getCss('--aggressive'), other:getCss('--other') };
     const CATEGORY_ORDER = ['미국','한국','뉴질랜드','채권','Gold','Cash','연금'];
     const EXPOSURE_ORDER = ['미국','한국','호주/뉴질랜드','채권','금','Cash','기타'];
     const EXPOSURE_COLORS = { '미국':COLORS.us, '한국':COLORS.kr, '호주/뉴질랜드':COLORS.nz, '채권':COLORS.bond, '금':COLORS.gold, 'Cash':COLORS.cash, '기타':COLORS.other };
-    // Milford latest monthly fact sheet as at 30 Apr 2026. Percentages must sum to ~100 for each fund.
-    // Active Growth: International Equities is mapped to 기타 because the fact sheet page exposes asset allocation but not full region split.
+
     const DEFAULT_MILFORD_LOOKTHROUGH = {
-      activeGrowth: { label:'Active Growth', asOf:'2026-05-31', exposure:{ '미국':42.0, '한국':0, '호주/뉴질랜드':16.71, '채권':17.89, '금':0.05, 'Cash':0.17, '기타':23.18 } },
-      aggressive: { label:'Aggressive', asOf:'2026-05-31', exposure:{ '미국':55.5, '한국':0, '호주/뉴질랜드':20.3, '채권':0.60, '금':0.01, 'Cash':0.00, '기타':23.59 } }
+      activeGrowth: { label:'Active Growth', asOf:'2026-06-30', method:'미국 추정 = Active International 65.18% × Aggressive 미국/International 비율 (55.50 / 79.09)', exposure:{ '미국':45.74, '한국':0, '호주/뉴질랜드':16.71, '채권':17.89, '금':0.05, 'Cash':0.17, '기타':19.44 } },
+      aggressive: { label:'Aggressive', asOf:'2026-06-30', method:'Aggressive Fact Sheet 직접 추출', exposure:{ '미국':55.63, '한국':0, '호주/뉴질랜드':20.11, '채권':0.60, '금':0.01, 'Cash':0.00, '기타':23.65 } }
     };
+
+    /* ============ ETF holdings DB (editable) ============ */
+    const DEFAULT_ETF_HOLDINGS = {
+      'SPYG': { name:'SPDR Portfolio S&P 500 Growth', asOf:'2026-07-22', holdings:[
+        {ticker:'NVDA',name:'NVIDIA',weight:14.65},{ticker:'MSFT',name:'Microsoft',weight:8.27},
+        {ticker:'AAPL',name:'Apple',weight:6.83},{ticker:'GOOGL',name:'Alphabet A',weight:5.72},
+        {ticker:'AVGO',name:'Broadcom',weight:5.36},{ticker:'GOOG',name:'Alphabet C',weight:4.61},
+        {ticker:'META',name:'Meta Platforms',weight:3.93},{ticker:'AMZN',name:'Amazon',weight:3.62},
+        {ticker:'MU',name:'Micron',weight:3.09},{ticker:'LLY',name:'Eli Lilly',weight:2.62} ] },
+      'IVW': { name:'iShares S&P 500 Growth', asOf:'2026-07-23', holdings:[
+        {ticker:'NVDA',name:'NVIDIA',weight:14.67},{ticker:'MSFT',name:'Microsoft',weight:8.22},
+        {ticker:'AAPL',name:'Apple',weight:6.85},{ticker:'GOOGL',name:'Alphabet A',weight:5.40},
+        {ticker:'AVGO',name:'Broadcom',weight:5.39},{ticker:'GOOG',name:'Alphabet C',weight:4.36},
+        {ticker:'META',name:'Meta Platforms',weight:3.86},{ticker:'AMZN',name:'Amazon',weight:3.52},
+        {ticker:'MU',name:'Micron',weight:3.24},{ticker:'LLY',name:'Eli Lilly',weight:2.72} ] },
+      'QQQ': { name:'Invesco QQQ Trust', asOf:'2026-07-24', holdings:[
+        {ticker:'NVDA',name:'NVIDIA',weight:8.32},{ticker:'AAPL',name:'Apple',weight:8.13},
+        {ticker:'MU',name:'Micron',weight:4.77},{ticker:'MSFT',name:'Microsoft',weight:4.72},
+        {ticker:'AMZN',name:'Amazon',weight:4.15},{ticker:'AMD',name:'AMD',weight:3.91},
+        {ticker:'GOOGL',name:'Alphabet A',weight:3.10},{ticker:'AVGO',name:'Broadcom',weight:3.01},
+        {ticker:'META',name:'Meta Platforms',weight:2.93},{ticker:'GOOG',name:'Alphabet C',weight:2.90} ] },
+      'SPY': { name:'SPDR S&P 500 ETF Trust', asOf:'2026-06-18', holdings:[
+        {ticker:'NVDA',name:'NVIDIA',weight:7.89},{ticker:'AAPL',name:'Apple',weight:7.05},
+        {ticker:'MSFT',name:'Microsoft',weight:5.14},{ticker:'AMZN',name:'Amazon',weight:4.07},
+        {ticker:'GOOGL',name:'Alphabet A',weight:3.41},{ticker:'AVGO',name:'Broadcom',weight:3.26},
+        {ticker:'GOOG',name:'Alphabet C',weight:2.90},{ticker:'META',name:'Meta Platforms',weight:2.60},
+        {ticker:'TSLA',name:'Tesla',weight:1.90},{ticker:'BRK.B',name:'Berkshire Hathaway',weight:1.80} ] },
+      'SCHD': { name:'Schwab US Dividend Equity', asOf:'2026-07-25', holdings:[
+        {ticker:'ABT',name:'Abbott Laboratories',weight:4.56},{ticker:'MRK',name:'Merck',weight:4.41},
+        {ticker:'UNH',name:'UnitedHealth',weight:4.31},{ticker:'AMGN',name:'Amgen',weight:4.29},
+        {ticker:'HD',name:'Home Depot',weight:4.11},{ticker:'PG',name:'Procter & Gamble',weight:4.06},
+        {ticker:'KO',name:'Coca-Cola',weight:4.03},{ticker:'CVX',name:'Chevron',weight:3.96},
+        {ticker:'VZ',name:'Verizon',weight:3.84},{ticker:'COP',name:'ConocoPhillips',weight:3.72} ] },
+      'EWY': { name:'iShares MSCI South Korea', asOf:'2026-07-24', holdings:[
+        {ticker:'000660.KS',name:'SK하이닉스',weight:22.57},{ticker:'005930.KS',name:'삼성전자',weight:21.67},
+        {ticker:'402340.KS',name:'SK스퀘어',weight:3.48},{ticker:'009150.KS',name:'삼성전기',weight:2.75},
+        {ticker:'105560.KS',name:'KB금융',weight:2.12},{ticker:'005380.KS',name:'현대차',weight:1.76},
+        {ticker:'055550.KS',name:'신한지주',weight:1.61},{ticker:'086790.KS',name:'하나금융',weight:1.41},
+        {ticker:'012450.KS',name:'한화에어로스페이스',weight:1.19},{ticker:'035420.KS',name:'NAVER',weight:1.18} ] },
+      '360750.KS': { name:'TIGER 미국S&P500', asOf:'2026-07-24', holdings:[
+        {ticker:'NVDA',name:'NVIDIA',weight:7.52},{ticker:'AAPL',name:'Apple',weight:7.21},
+        {ticker:'MSFT',name:'Microsoft',weight:4.43},{ticker:'AMZN',name:'Amazon',weight:3.63},
+        {ticker:'GOOGL',name:'Alphabet A',weight:3.05},{ticker:'AVGO',name:'Broadcom',weight:2.74},
+        {ticker:'GOOG',name:'Alphabet C',weight:2.45},{ticker:'META',name:'Meta Platforms',weight:2.12},
+        {ticker:'MU',name:'Micron',weight:1.64} ] },
+      '102110.KS': { name:'TIGER 200 (Mirae Asset)', asOf:'2026-07-23', holdings:[
+        {ticker:'005930.KS',name:'삼성전자',weight:33.18},{ticker:'000660.KS',name:'SK하이닉스',weight:27.79},
+        {ticker:'402340.KS',name:'SK스퀘어',weight:3.12},{ticker:'009150.KS',name:'삼성전기',weight:2.08},
+        {ticker:'005380.KS',name:'현대차',weight:1.57},{ticker:'105560.KS',name:'KB금융',weight:1.47},
+        {ticker:'055550.KS',name:'신한지주',weight:1.18},{ticker:'000270.KS',name:'기아',weight:0.98},
+        {ticker:'028260.KS',name:'삼성물산',weight:0.98},{ticker:'012450.KS',name:'한화에어로스페이스',weight:0.87} ] },
+      '292150.KS': { name:'TIGER 코리아TOP10', asOf:'2026-07-27', holdings:[
+        {ticker:'000660.KS',name:'SK하이닉스',weight:27.60},{ticker:'005930.KS',name:'삼성전자',weight:27.52},
+        {ticker:'005380.KS',name:'현대차',weight:7.08},{ticker:'105560.KS',name:'KB금융',weight:6.19},
+        {ticker:'055550.KS',name:'신한지주',weight:4.86},{ticker:'000270.KS',name:'기아',weight:4.53},
+        {ticker:'012450.KS',name:'한화에어로스페이스',weight:3.84},{ticker:'034020.KS',name:'두산에너빌리티',weight:3.78},
+        {ticker:'068270.KS',name:'셀트리온',weight:3.45} ] },
+      '396500.KS': { name:'TIGER Fn반도체TOP10', asOf:'2026-07-27', holdings:[
+        {ticker:'005930.KS',name:'삼성전자',weight:26.53},{ticker:'000660.KS',name:'SK하이닉스',weight:25.11},
+        {ticker:'402340.KS',name:'SK스퀘어',weight:22.64},{ticker:'042700.KS',name:'한미반도체',weight:4.74},
+        {ticker:'036930.KS',name:'주성엔지니어링',weight:4.14},{ticker:'007660.KS',name:'이수페타시스',weight:3.77},
+        {ticker:'240810.KS',name:'원익IPS',weight:2.80},{ticker:'000990.KS',name:'DB하이텍',weight:2.39},
+        {ticker:'058470.KS',name:'리노공업',weight:2.16} ] }
+    };
+    const ETF_STORE_KEY = 'etf_holdings_v2';
+    function loadEtfHoldings(){ try{ const s=JSON.parse(localStorage.getItem(ETF_STORE_KEY)||'null'); if(s&&typeof s==='object'&&Object.keys(s).length) return s; }catch(e){} return JSON.parse(JSON.stringify(DEFAULT_ETF_HOLDINGS)); }
+    function saveEtfHoldings(db){ ETF_HOLDINGS=db; localStorage.setItem(ETF_STORE_KEY, JSON.stringify(db)); }
+    let ETF_HOLDINGS = loadEtfHoldings();
+
+    /* ============ milford store ============ */
     let MILFORD_LOOKTHROUGH = loadMilfordLookthrough();
-    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v2')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
-    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v2',JSON.stringify(data));}
+    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v3')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
+    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v3',JSON.stringify(data));}
+
     const FX_SYMBOLS = new Set(['KRW=X','NZDKRW=X','NZDUSD=X']);
     const CASH_SYMBOLS = new Set(['KRW','USD','NZD','NZC','NZC.NZ','SGOV']);
     const CASH_BALANCE_SYMBOLS = new Set(['KRW','USD','NZD']);
     const BOND_SYMBOLS = new Set(['IEF','305080.KS']);
     const GOLD_SYMBOLS = new Set(['IAUM','0072R0.KS']);
     const US_KRW_SYMBOLS = new Set(['360750.KS']);
+    const EQUITY_CATEGORIES = new Set(['미국','한국','뉴질랜드']);
+
     let rows=[]; let fxManualOverride=false; let chart=null; let exposureChart=null; let lastSummary=null; let displayCurrency=DEFAULT_DISPLAY_CURRENCY; let lastViewportMode=null;
-    function isMobileView(){return window.innerWidth<=MOBILE_BREAKPOINT;} function getCss(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
-    function toNumber(value){const cleaned=String(value==null?'':value).trim().replace(/,/g,''); if(cleaned==='') return 0; return Number(cleaned);} function percent(n){return `${(Number(n)||0).toFixed(1)}%`;}
+
+    /* ============ helpers ============ */
+    function isMobileView(){return window.innerWidth<=MOBILE_BREAKPOINT;}
+    function getCss(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+    function toNumber(value){const cleaned=String(value==null?'':value).trim().replace(/,/g,''); if(cleaned==='') return 0; return Number(cleaned);}
+    function percent(n){return `${(Number(n)||0).toFixed(1)}%`;}
     function escapeHtml(value){return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');}
-    function showError(message){const box=document.getElementById('errorBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message));} function showNotice(message){const box=document.getElementById('noticeBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message));}
+    function showError(message){const box=document.getElementById('errorBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message));}
+    function showNotice(message){const box=document.getElementById('noticeBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message));}
+    function normTicker(s){return String(s||'').trim().toUpperCase();}
+
     function readStoredSettings(){return {activeGrowth:Number(localStorage.getItem('pension_active_growth')||'0')||0, aggressive:Number(localStorage.getItem('pension_aggressive')||'0')||0, usdPerNzd:Number(localStorage.getItem('fx_usd_per_nzd')||String(DEFAULT_FX.usdPerNzd))||DEFAULT_FX.usdPerNzd, krwPerNzd:Number(localStorage.getItem('fx_krw_per_nzd')||String(DEFAULT_FX.krwPerNzd))||DEFAULT_FX.krwPerNzd, displayCurrency:localStorage.getItem('display_currency')||DEFAULT_DISPLAY_CURRENCY};}
     function saveSettings(s){localStorage.setItem('pension_active_growth',String(s.activeGrowth||0)); localStorage.setItem('pension_aggressive',String(s.aggressive||0)); localStorage.setItem('fx_usd_per_nzd',String(s.usdPerNzd||0)); localStorage.setItem('fx_krw_per_nzd',String(s.krwPerNzd||0)); localStorage.setItem('display_currency',s.displayCurrency||displayCurrency||DEFAULT_DISPLAY_CURRENCY);}
     function setInputsFromStorage(){const s=readStoredSettings(); document.getElementById('activeGrowthInput').value=s.activeGrowth?s.activeGrowth:''; document.getElementById('aggressiveInput').value=s.aggressive?s.aggressive:''; document.getElementById('nzdusdInput').value=s.usdPerNzd||''; document.getElementById('nzdkrwInput').value=s.krwPerNzd||''; displayCurrency=(s.displayCurrency==='KRW')?'KRW':'NZD'; updateDisplayCurrencyButtons();}
     function getInputSettings(){return {activeGrowth:Math.max(0,toNumber(document.getElementById('activeGrowthInput').value)), aggressive:Math.max(0,toNumber(document.getElementById('aggressiveInput').value)), usdPerNzd:Math.max(0,toNumber(document.getElementById('nzdusdInput').value)), krwPerNzd:Math.max(0,toNumber(document.getElementById('nzdkrwInput').value)), displayCurrency};}
+
     function formatCurrencyValue(value,currencyCode){return new Intl.NumberFormat(currencyCode==='KRW'?'ko-KR':'en-NZ',{style:'currency',currency:currencyCode,maximumFractionDigits:0}).format(Number(value||0));}
-    function convertNzdForDisplay(nzdValue,fx){return displayCurrency==='KRW'?Number(nzdValue||0)*Number(fx.krwPerNzd||0):Number(nzdValue||0);} function formatDisplayAmount(nzdValue,fx){return displayCurrency==='KRW'?formatCurrencyValue(convertNzdForDisplay(nzdValue,fx),'KRW'):formatCurrencyValue(nzdValue,'NZD');}
-    function updateDisplayCurrencyButtons(){document.getElementById('displayNzdBtn').classList.toggle('active',displayCurrency==='NZD'); document.getElementById('displayKrwBtn').classList.toggle('active',displayCurrency==='KRW'); document.getElementById('amountHeader').textContent=`금액 (${displayCurrency})`;}
+    function convertNzdForDisplay(nzdValue,fx){return displayCurrency==='KRW'?Number(nzdValue||0)*Number(fx.krwPerNzd||0):Number(nzdValue||0);}
+    function formatDisplayAmount(nzdValue,fx){return displayCurrency==='KRW'?formatCurrencyValue(convertNzdForDisplay(nzdValue,fx),'KRW'):formatCurrencyValue(nzdValue,'NZD');}
+    function updateDisplayCurrencyButtons(){document.querySelectorAll('[data-cur]').forEach(b=>b.classList.toggle('active',b.dataset.cur===displayCurrency)); const h=document.getElementById('amountHeader'); if(h)h.textContent=`금액 (${displayCurrency})`; const lh=document.getElementById('ltAmountHeader'); if(lh)lh.textContent=`Exposure (${displayCurrency})`;}
+
+    /* ============ CSV parse ============ */
     function parseCsvLine(line){const out=[]; let current=''; let inQuotes=false; for(let i=0;i<line.length;i++){const ch=line[i]; if(ch==='"'){ if(inQuotes&&line[i+1]==='"'){current+='"'; i++;} else inQuotes=!inQuotes;} else if(ch===','&&!inQuotes){out.push(current); current='';} else current+=ch;} out.push(current); return out;}
-    function parseCsv(text){const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim().length>0); if(!lines.length) return []; const headers=parseCsvLine(lines[0]).map(h=>String(h||'').trim().toLowerCase()); const symbolIdx=headers.findIndex(h=>['symbol','ticker'].includes(h)); const priceIdx=headers.findIndex(h=>['current price','current_price','price'].includes(h)); const qtyIdx=headers.findIndex(h=>['quantity','qty','amount'].includes(h)); const transactionTypeIdx=headers.findIndex(h=>['transaction type','transaction_type','type'].includes(h)); if(symbolIdx===-1||priceIdx===-1||qtyIdx===-1) throw new Error('CSV에 Symbol, Current Price, Quantity 컬럼이 필요합니다.'); const depositCurrencyOrder=['KRW','NZD','USD']; let depositCount=0; return lines.slice(1).map((line,idx)=>{const parts=parseCsvLine(line); let symbol=String(parts[symbolIdx]||'').trim().toUpperCase(); const currentPrice=toNumber(parts[priceIdx]); const quantity=toNumber(parts[qtyIdx]); const transactionType=transactionTypeIdx>=0?String(parts[transactionTypeIdx]||'').trim().toUpperCase():''; if(symbol==='$$CASH_TX'&&transactionType==='DEPOSIT'){ if(depositCount<depositCurrencyOrder.length) symbol=depositCurrencyOrder[depositCount]; depositCount++; } if(!symbol) return null; if(Number.isNaN(quantity)) throw new Error(`${idx+2}번째 행의 Quantity 값이 숫자가 아닙니다.`); if(Number.isNaN(currentPrice)) throw new Error(`${idx+2}번째 행의 Current Price 값이 숫자가 아닙니다.`); return {symbol,currentPrice,quantity,transactionType};}).filter(Boolean);}
+    function parseCsv(text){const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter(line=>line.trim().length>0); if(!lines.length) return []; const headers=parseCsvLine(lines[0]).map(h=>String(h||'').trim().toLowerCase()); const symbolIdx=headers.findIndex(h=>['symbol','ticker'].includes(h)); const priceIdx=headers.findIndex(h=>['current price','current_price','price'].includes(h)); const qtyIdx=headers.findIndex(h=>['quantity','qty','amount'].includes(h)); const transactionTypeIdx=headers.findIndex(h=>['transaction type','transaction_type','type','note'].includes(h)); if(symbolIdx===-1||priceIdx===-1||qtyIdx===-1) throw new Error('CSV에 Symbol, Current Price, Quantity 컬럼이 필요합니다.'); const depositCurrencyOrder=['KRW','NZD','USD']; let depositCount=0; return lines.slice(1).map((line,idx)=>{const parts=parseCsvLine(line); let symbol=String(parts[symbolIdx]||'').trim().toUpperCase(); const currentPrice=toNumber(parts[priceIdx]); const quantity=toNumber(parts[qtyIdx]); const transactionType=transactionTypeIdx>=0?String(parts[transactionTypeIdx]||'').trim().toUpperCase():''; if(symbol==='$$CASH_TX'&&transactionType==='DEPOSIT'){ if(depositCount<depositCurrencyOrder.length) symbol=depositCurrencyOrder[depositCount]; depositCount++; } if(!symbol) return null; if(Number.isNaN(quantity)) throw new Error(`${idx+2}번째 행의 Quantity 값이 숫자가 아닙니다.`); if(Number.isNaN(currentPrice)) throw new Error(`${idx+2}번째 행의 Current Price 값이 숫자가 아닙니다.`); return {symbol,currentPrice,quantity,transactionType};}).filter(Boolean);}
+
     function extractFx(parsedRows){const input=getInputSettings(); let usdPerNzd=input.usdPerNzd||0,krwPerNzd=input.krwPerNzd||0,csvUsd=0,csvKrw=0; parsedRows.forEach(row=>{if(row.symbol==='NZDUSD=X'&&row.currentPrice)csvUsd=row.currentPrice;if(row.symbol==='NZDKRW=X'&&row.currentPrice)csvKrw=row.currentPrice;}); if(!fxManualOverride&&(csvUsd||csvKrw)){if(csvUsd){usdPerNzd=csvUsd;document.getElementById('nzdusdInput').value=csvUsd;}if(csvKrw){krwPerNzd=csvKrw;document.getElementById('nzdkrwInput').value=csvKrw;}} if(!usdPerNzd||!krwPerNzd)throw new Error('환율을 계산할 수 없습니다.'); return {usdPerNzd,krwPerNzd,source:fxManualOverride?'manual':((csvUsd||csvKrw)?'csv':'manual')};}
+
     function classifyHolding(symbol){const n=String(symbol||'').trim().toUpperCase(); if(!n) return null; if(FX_SYMBOLS.has(n)) return {skip:true}; if(BOND_SYMBOLS.has(n)) return {category:'채권',currency:n.endsWith('.KS')?'KRW':'USD'}; if(GOLD_SYMBOLS.has(n)) return {category:'Gold',currency:n.endsWith('.KS')?'KRW':'USD'}; if(CASH_SYMBOLS.has(n)){if(n==='KRW') return {category:'Cash',currency:'KRW'}; if(n==='USD'||n==='SGOV') return {category:'Cash',currency:'USD'}; if(n==='NZD'||n==='NZC'||n==='NZC.NZ') return {category:'Cash',currency:'NZD'};} if(US_KRW_SYMBOLS.has(n)) return {category:'미국',currency:'KRW'}; if(/^\d+\.KS$/.test(n)) return {category:'한국',currency:'KRW'}; if(/^[A-Z]+\.NZ$/.test(n)) return {category:'뉴질랜드',currency:'NZD'}; if(/^[A-Z]+$/.test(n)) return {category:'미국',currency:'USD'}; return {category:'기타',currency:'NZD'};}
-    function isCashBalanceSymbol(symbol){return CASH_BALANCE_SYMBOLS.has(String(symbol||'').trim().toUpperCase());} function getNativeAssetValue(row){const price=Number(row.currentPrice||0), qty=Number(row.quantity||0); if(price>0) return price*qty; return isCashBalanceSymbol(row.symbol)?qty:0;} function convertToNzd(value,currency,fx){if(currency==='NZD') return value; if(currency==='USD') return value/fx.usdPerNzd; if(currency==='KRW') return value/fx.krwPerNzd; return value;}
+
+    function isCashBalanceSymbol(symbol){return CASH_BALANCE_SYMBOLS.has(String(symbol||'').trim().toUpperCase());}
+    function getNativeAssetValue(row){const price=Number(row.currentPrice||0), qty=Number(row.quantity||0); if(price>0) return price*qty; return isCashBalanceSymbol(row.symbol)?qty:0;}
+    function convertToNzd(value,currency,fx){if(currency==='NZD') return value; if(currency==='USD') return value/fx.usdPerNzd; if(currency==='KRW') return value/fx.krwPerNzd; return value;}
     function addExposure(target,name,value){if(Object.prototype.hasOwnProperty.call(target,name)) target[name]+=Number(value||0);}
     function buildExposureFromSummary(sums,settings){const exposure={'미국':sums['미국']||0,'한국':sums['한국']||0,'호주/뉴질랜드':sums['뉴질랜드']||0,'채권':sums['채권']||0,'금':sums['Gold']||0,'Cash':sums['Cash']||0,'기타':0}; [['activeGrowth',settings.activeGrowth],['aggressive',settings.aggressive]].forEach(([key,amount])=>{const data=MILFORD_LOOKTHROUGH[key].exposure; Object.keys(data).forEach(name=>addExposure(exposure,name,Number(amount||0)*data[name]/100));}); return EXPOSURE_ORDER.map(name=>({name,value:exposure[name]||0,color:EXPOSURE_COLORS[name],ratio:0}));}
+
     function computeSummary(parsedRows){const settings=getInputSettings(); const fx=extractFx(parsedRows); const sums={미국:0,한국:0,뉴질랜드:0,채권:0,Gold:0,Cash:0,연금:0}; const holdings=[]; parsedRows.forEach(row=>{const type=String(row.transactionType||'').trim().toUpperCase(); if(type && type!=='BUY' && type!=='DEPOSIT') return; const info=classifyHolding(row.symbol); if(!info||info.skip) return; const nativeValue=getNativeAssetValue(row); const nzdValue=convertToNzd(nativeValue,info.currency,fx); if(!Number.isFinite(nzdValue)) return; if(Object.prototype.hasOwnProperty.call(sums,info.category)) sums[info.category]+=nzdValue; holdings.push({symbol:row.symbol,category:info.category,currency:info.currency,nativeValue,nzdValue});}); sums['연금']=settings.activeGrowth+settings.aggressive; const total=Object.values(sums).reduce((a,b)=>a+b,0); const topCategories=CATEGORY_ORDER.map(name=>({name,value:sums[name]||0,ratio:total>0?((sums[name]||0)/total)*100:0})); const inner=[{name:'연금',value:sums['연금'],color:COLORS.pension},{name:'안전자산',value:sums['채권']+sums['Gold']+sums['Cash'],color:COLORS.safe},{name:'위험자산',value:sums['미국']+sums['한국']+sums['뉴질랜드'],color:COLORS.risk}].filter(i=>i.value>0); const outer=[{name:'Active Growth',value:settings.activeGrowth,color:COLORS.activeGrowth},{name:'Aggressive',value:settings.aggressive,color:COLORS.aggressive},{name:'채권',value:sums['채권'],color:COLORS.bond},{name:'Gold',value:sums['Gold'],color:COLORS.gold},{name:'Cash',value:sums['Cash'],color:COLORS.cash},{name:'미국',value:sums['미국'],color:COLORS.us},{name:'한국',value:sums['한국'],color:COLORS.kr},{name:'뉴질랜드',value:sums['뉴질랜드'],color:COLORS.nz}].filter(i=>i.value>0); const exposure=buildExposureFromSummary(sums,settings); const exposureTotal=exposure.reduce((a,b)=>a+b.value,0); exposure.forEach(i=>i.ratio=exposureTotal>0?i.value/exposureTotal*100:0); return {fx,total,holdings,sums,topCategories,inner,outer,exposure,exposureTotal,settings};}
+
+    /* ============ NEW: stock-level look-through ============ */
+    function buildLookThrough(summary){
+      // Only equity individual holdings + equity ETFs (in DB) are looked through.
+      const map = new Map();       // key = ticker -> {ticker,name,value,sources:{}}
+      const coveredEtfs = [];      // ETFs in portfolio found in DB
+      const uncoveredEtfHint = []; // (not used aggressively) reserved
+      let directEquityTotal = 0;   // denominator: all equity-ish direct value considered
+      let remainder = 0;           // ETF weight beyond listed top holdings
+
+      function add(ticker, name, value, srcSymbol, isDirect){
+        const key = normTicker(ticker);
+        if(!map.has(key)) map.set(key,{ticker:key,name:name||key,value:0,sources:{}});
+        const e = map.get(key);
+        e.value += value;
+        if(name && (e.name===key || !e.name)) e.name = name; // prefer a real name
+        const tag = isDirect ? '직접보유' : srcSymbol;
+        e.sources[tag] = (e.sources[tag]||0) + value;
+      }
+
+      // 1) aggregate portfolio holdings by symbol first (CSV has multiple BUY lots per symbol)
+      const agg = new Map(); // symbol -> {symbol, category, nzdValue}
+      summary.holdings.forEach(h=>{
+        const key = normTicker(h.symbol);
+        if(!agg.has(key)) agg.set(key,{symbol:key, category:h.category, nzdValue:0});
+        agg.get(key).nzdValue += h.nzdValue;
+      });
+
+      // 2) look through each unique symbol
+      agg.forEach(h=>{
+        const key = h.symbol;
+        const etf = ETF_HOLDINGS[key];
+        if(etf && Array.isArray(etf.holdings) && etf.holdings.length){
+          // ETF -> look through
+          directEquityTotal += h.nzdValue;
+          const listed = etf.holdings.reduce((a,b)=>a+(Number(b.weight)||0),0);
+          etf.holdings.forEach(u=>{
+            const contrib = h.nzdValue * (Number(u.weight)||0)/100;
+            add(u.ticker, u.name, contrib, key, false);
+          });
+          const rem = h.nzdValue * Math.max(0, 100-listed)/100;
+          remainder += rem;
+          coveredEtfs.push({ symbol:key, name:etf.name||key, asOf:etf.asOf||'', nzdValue:h.nzdValue, listed, holdings:etf.holdings });
+        } else if(EQUITY_CATEGORIES.has(h.category)){
+          // individual equity (not an ETF in DB)
+          directEquityTotal += h.nzdValue;
+          add(h.symbol, h.symbol, h.nzdValue, h.symbol, true);
+        }
+        // bonds / gold / cash are not stocks -> excluded from stock look-through
+      });
+      coveredEtfs.sort((a,b)=>b.nzdValue-a.nzdValue);
+
+      const companies = [...map.values()].sort((a,b)=>b.value-a.value);
+      const top = companies.slice(0,10);
+      const restStocks = companies.slice(10).reduce((a,b)=>a+b.value,0);
+      const otherBucket = restStocks + remainder; // stocks beyond top10 + ETF residual
+      const totalForRatio = directEquityTotal || 0;
+      top.forEach(c=>c.ratio = totalForRatio>0 ? c.value/totalForRatio*100 : 0);
+
+      const top10Sum = top.reduce((a,b)=>a+b.value,0);
+      return { top, otherBucket, totalForRatio, coveredEtfs, distinctCount:companies.length, top10Coverage: totalForRatio>0? top10Sum/totalForRatio*100 : 0, restCount: Math.max(0, companies.length-10) };
+    }
+
+    /* ============ PDF fact sheet (unchanged logic) ============ */
     function pdfNumber(text,label){const flexibleLabel=String(label).trim().split(/\s+/).map(part=>part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s+'); const re=new RegExp(flexibleLabel+'\\s*(?:#\\s*)?([0-9]+(?:\\.[0-9]+)?)\\s*%','i'); const match=String(text||'').match(re); return match?Number(match[1]):null;}
     function pdfDate(text){const m=text.match(/as at\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})/i); if(!m) return new Date().toISOString().slice(0,10); const d=new Date(m[1]); return Number.isNaN(d.getTime())?m[1]:d.toISOString().slice(0,10);}
     async function extractPdfText(file){if(window.pdfjsLib&&window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; if(!window.pdfjsLib) throw new Error('PDF 분석 모듈을 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'); const bytes=new Uint8Array(await file.arrayBuffer()); const pdf=await window.pdfjsLib.getDocument({data:bytes}).promise; let text=''; for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i); const content=await page.getTextContent(); text+=' '+content.items.map(x=>x.str).join(' ');} return text.replace(/\s+/g,' ');}
@@ -125,23 +674,152 @@ Deposit 자동인식: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     function parseActiveFactSheet(text,aggressive){const intl=pdfNumber(text,'International Equities'), au=pdfNumber(text,'Australian Equities'), nz=pdfNumber(text,'New Zealand Equities'); const nzBond=pdfNumber(text,'New Zealand Fixed Interest'), intBond=pdfNumber(text,'International Fixed Interest'), gold=pdfNumber(text,'Commodities'), cash=pdfNumber(text,'Effective Cash'); if([intl,au,nz,nzBond,intBond,gold,cash].some(v=>v===null)) throw new Error('Active Growth PDF의 필수 비율을 찾지 못했습니다. Milford 월간 Fact Sheet인지 확인해 주세요.'); const usShareOfIntl=aggressive.intl>0?aggressive.us/aggressive.intl:0; const estimatedUs=Math.min(intl,Math.max(0,intl*usShareOfIntl)); return {asOf:pdfDate(text),intl,estimatedUs,au,nz,bond:nzBond+intBond,gold,cash,other:Math.max(0,intl-estimatedUs)};}
     function normalizeExposure(raw){const names=['미국','한국','호주/뉴질랜드','채권','금','Cash','기타']; const sum=names.reduce((a,k)=>a+Number(raw[k]||0),0); if(!sum) return raw; const out={}; names.forEach(k=>out[k]=Number(raw[k]||0)*100/sum); return out;}
     async function handleMilfordPdfs(files){const status=document.getElementById('milfordUploadStatus'); const list=[...files]; if(list.length<2) throw new Error('Active Growth와 Aggressive PDF 2개를 함께 선택해 주세요.'); status.textContent='PDF를 분석하는 중입니다...'; const docs=await Promise.all(list.map(async f=>({name:f.name,text:await extractPdfText(f)}))); const aggressiveDoc=docs.find(d=>/aggressive/i.test(d.name)&&!/active[ _-]*growth/i.test(d.name)) || docs.find(d=>/KiwiSaver Aggressive Fund Monthly Fact Sheet/i.test(d.text)); const activeDoc=docs.find(d=>/active[ _-]*growth/i.test(d.name)) || docs.find(d=>/KiwiSaver Active Growth Fund Monthly Fact Sheet/i.test(d.text)); if(!aggressiveDoc||!activeDoc||aggressiveDoc===activeDoc) throw new Error('Active Growth PDF와 Aggressive PDF를 구분하지 못했습니다.'); const ag=parseAggressiveFactSheet(aggressiveDoc.text); const ac=parseActiveFactSheet(activeDoc.text,ag); const data={activeGrowth:{label:'Active Growth',asOf:ac.asOf,method:`미국 추정 = Active International ${ac.intl.toFixed(2)}% × Aggressive 미국/International 비율 (${ag.us.toFixed(2)} / ${ag.intl.toFixed(2)})`,exposure:normalizeExposure({'미국':ac.estimatedUs,'한국':0,'호주/뉴질랜드':ac.au+ac.nz,'채권':ac.bond,'금':ac.gold,'Cash':ac.cash,'기타':ac.other})},aggressive:{label:'Aggressive',asOf:ag.asOf,method:'Aggressive Fact Sheet 직접 추출',exposure:normalizeExposure({'미국':ag.us,'한국':0,'호주/뉴질랜드':ag.au+ag.nz,'채권':ag.bond,'금':ag.gold,'Cash':ag.cash,'기타':Math.max(0,ag.intl-ag.us)})}}; saveMilfordLookthrough(data); if(rows.length) updateDashboard(); else if(lastSummary) renderAllFromSummary(lastSummary); renderMilfordStatus(); status.textContent='업데이트 완료: '+ac.asOf+' / 브라우저에 저장됨';}
-    function renderMilfordStatus(){const el=document.getElementById('milfordUploadStatus'); if(!el) return; const a=MILFORD_LOOKTHROUGH.activeGrowth, g=MILFORD_LOOKTHROUGH.aggressive; el.innerHTML=`현재 적용: Active ${escapeHtml(a.asOf)} / Aggressive ${escapeHtml(g.asOf)}<br>Active 미국 ${a.exposure['미국'].toFixed(2)}%, 기타 ${a.exposure['기타'].toFixed(2)}%`;}
+    function renderMilfordStatus(){const el=document.getElementById('milfordUploadStatus'); if(!el) return; const a=MILFORD_LOOKTHROUGH.activeGrowth, g=MILFORD_LOOKTHROUGH.aggressive; el.innerHTML=`현재 적용: Active ${escapeHtml(a.asOf)} · Aggressive ${escapeHtml(g.asOf)} — Active 미국 ${a.exposure['미국'].toFixed(1)}%`;}
+
+    /* ============ renderers ============ */
     function renderFx(fx){const source=document.getElementById('fxSourceValue');if(source)source.textContent=fx.source==='csv'?'CSV 자동 인식':'직접 수정 / 저장값';}
     function renderStats(summary){document.getElementById('totalValue').textContent=formatDisplayAmount(summary.total,summary.fx); document.getElementById('holdingCount').textContent=String(summary.holdings.length); document.getElementById('pensionTotalValue').textContent=formatDisplayAmount(summary.settings.activeGrowth+summary.settings.aggressive,summary.fx);}
-    function renderTable(summary){const tbody=document.getElementById('allocationTableBody'); const items=summary.exposure.filter(item=>item.value>0); const total=summary.exposureTotal||0; const rowsHtml=items.map(item=>`<tr><td>${escapeHtml(item.name)}</td><td>${formatDisplayAmount(item.value,summary.fx)}</td><td>${percent(item.ratio)}</td></tr>`).join(''); tbody.innerHTML=rowsHtml+`<tr class="total-row"><td>합계</td><td>${formatDisplayAmount(total,summary.fx)}</td><td>${total>0?'100.0%':'0.0%'}</td></tr>`;}
+    function renderTable(summary){const tbody=document.getElementById('allocationTableBody'); const items=summary.exposure.filter(item=>item.value>0); const total=summary.exposureTotal||0; const rowsHtml=items.map(item=>`<tr><td>${escapeHtml(item.name)}</td><td class="num">${formatDisplayAmount(item.value,summary.fx)}</td><td class="num">${percent(item.ratio)}</td></tr>`).join(''); tbody.innerHTML=rowsHtml+`<tr class="total-row"><td>합계</td><td class="num">${formatDisplayAmount(total,summary.fx)}</td><td class="num">${total>0?'100.0%':'0.0%'}</td></tr>`;}
+
+    function renderLookThrough(summary){
+      const lt = buildLookThrough(summary);
+      document.getElementById('lookthroughCount').textContent = String(lt.distinctCount);
+      const tbody = document.getElementById('lookthroughTableBody');
+      if(!lt.top.length){ tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">직투(개별 종목 또는 등록된 ETF) 데이터가 없습니다.</td></tr>`; document.getElementById('coverageNote').innerHTML=''; renderEtfConstituents(lt); return; }
+      const maxVal = lt.top[0].value || 1;
+      const rowsHtml = lt.top.map((c,i)=>{
+        const srcKeys = Object.keys(c.sources).sort((a,b)=>c.sources[b]-c.sources[a]);
+        const chips = srcKeys.slice(0,4).map(s=>`<span class="src-chip ${s==='직접보유'?'direct':''}">${escapeHtml(s)}</span>`).join('');
+        const barPct = Math.max(2, c.value/maxVal*100);
+        return `<tr>
+          <td><span class="rank-badge ${i<3?'top':''}">${i+1}</span></td>
+          <td><div style="font-weight:700">${escapeHtml(c.name)}</div><div class="tkr">${escapeHtml(c.ticker)}</div><div class="src-chips">${chips}</div></td>
+          <td class="num">${formatDisplayAmount(c.value,summary.fx)}</td>
+          <td class="num">${percent(c.ratio)}</td>
+          <td><div class="bar"><span style="width:${barPct}%"></span></div></td>
+        </tr>`;
+      }).join('');
+      const otherRow = lt.otherBucket>0 ? `<tr><td></td><td style="color:var(--muted)">그 외 (하위 구성종목 + ETF 잔여)</td><td class="num">${formatDisplayAmount(lt.otherBucket,summary.fx)}</td><td class="num">${percent(lt.totalForRatio>0?lt.otherBucket/lt.totalForRatio*100:0)}</td><td></td></tr>` : '';
+      const totalRow = `<tr class="total-row"><td></td><td>직투 종목 Exposure 합계</td><td class="num">${formatDisplayAmount(lt.totalForRatio,summary.fx)}</td><td class="num">100.0%</td><td></td></tr>`;
+      tbody.innerHTML = rowsHtml + otherRow + totalRow;
+
+      const note = document.getElementById('coverageNote');
+      const etfNames = lt.coveredEtfs.map(e=>e.symbol);
+      note.innerHTML =
+        `<span class="pill good">Top 10 커버리지 ${lt.top10Coverage.toFixed(1)}%</span>`+
+        `<span class="pill">고유 종목 ${lt.distinctCount}개</span>`+
+        (etfNames.length?`<span class="pill good">Look-through ETF: ${etfNames.map(escapeHtml).join(', ')}</span>`:`<span class="pill miss">등록된 보유 ETF 없음 — 아래에서 추가하세요</span>`);
+      renderEtfConstituents(lt);
+    }
+
+    function renderEtfConstituents(lt){
+      const grid = document.getElementById('etfConstituentsGrid');
+      const empty = document.getElementById('etfConstituentsEmpty');
+      if(!lt.coveredEtfs.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display='none';
+      grid.innerHTML = lt.coveredEtfs.map(etf=>{
+        const maxW = Math.max(...etf.holdings.map(h=>Number(h.weight)||0),1);
+        const rows = etf.holdings.map(h=>{
+          const w = Number(h.weight)||0;
+          return `<div class="etf-hold"><div class="h-bar bar"><span style="width:${Math.max(3,w/maxW*100)}%"></span></div><div class="h-name">${escapeHtml(h.name||h.ticker)} <span class="tkr">${escapeHtml(h.ticker)}</span></div><div class="h-w">${w.toFixed(2)}%</div></div>`;
+        }).join('');
+        const fx = lastSummary?lastSummary.fx:DEFAULT_FX;
+        return `<div class="etf-card">
+          <div class="etf-card-head">
+            <div><div class="etf-name">${escapeHtml(etf.symbol)}</div><div class="etf-meta">${escapeHtml(etf.name)} · as of ${escapeHtml(etf.asOf||'-')} · 상위합 ${etf.listed.toFixed(1)}%</div></div>
+            <div class="etf-val"><strong>${formatDisplayAmount(etf.nzdValue,fx)}</strong>보유 평가액</div>
+          </div>
+          ${rows}
+        </div>`;
+      }).join('');
+    }
+
     function renderMobileLegend(containerId,items,fx){const container=document.getElementById(containerId); if(!isMobileView()){container.innerHTML=''; return;} container.innerHTML=`<div class="mobile-legend-grid">${items.filter(i=>i.value>0).map(i=>`<div class="mobile-legend-item"><span class="mobile-legend-dot" style="background:${i.color}"></span><div class="mobile-legend-text"><strong>${escapeHtml(i.name)}</strong><br />${escapeHtml(formatDisplayAmount(i.value,fx))}</div></div>`).join('')}</div>`;}
-    function makeDoughnut(canvasId,datasets,fx,legendMobileId){const mobile=isMobileView(); const ctx=document.getElementById(canvasId).getContext('2d'); return new Chart(ctx,{type:'doughnut',data:{datasets},options:{responsive:true,maintainAspectRatio:false,rotation:-90,circumference:360,layout:{padding:mobile?4:10},animation:false,plugins:{legend:{display:!mobile,position:'bottom',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'circle',padding:16,font:{size:12,family:'Noto Sans KR, sans-serif'},generateLabels(chart){const items=[]; chart.data.datasets.forEach((dataset,datasetIndex)=>{(dataset.data||[]).forEach((value,index)=>{if(!value) return; const label=dataset.labelsMeta[index]; items.push({text:`${label} (${formatDisplayAmount(value,fx)})`,fillStyle:dataset.backgroundColor[index],strokeStyle:dataset.backgroundColor[index],hidden:false,lineWidth:0,datasetIndex,index});});}); return items;}}},tooltip:{callbacks:{label(context){const value=Number(context.raw||0); const label=context.dataset.labelsMeta[context.dataIndex]||''; const total=(context.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0); const ratio=total>0?value/total*100:0; return `${label}: ${formatDisplayAmount(value,fx)} (${ratio.toFixed(1)}%)`;}}}}}});}
-    function renderChart(summary){const mobile=isMobileView(); if(chart) chart.destroy(); chart=makeDoughnut('allocationChart',[{label:'outer',data:summary.outer.map(i=>i.value),labelsMeta:summary.outer.map(i=>i.name),backgroundColor:summary.outer.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'60%':'58%'},{label:'inner',data:summary.inner.map(i=>i.value),labelsMeta:summary.inner.map(i=>i.name),backgroundColor:summary.inner.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'54%':'56%',cutout:mobile?'28%':'26%'}],summary.fx,'mobileLegend'); renderMobileLegend('mobileLegend',[...summary.outer,...summary.inner],summary.fx);}
-    function renderExposureChart(summary){const mobile=isMobileView(); const items=summary.exposure.filter(i=>i.value>0); if(exposureChart) exposureChart.destroy(); exposureChart=makeDoughnut('exposureChart',[{label:'exposure',data:items.map(i=>i.value),labelsMeta:items.map(i=>i.name),backgroundColor:items.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'38%':'35%'}],summary.fx,'exposureMobileLegend'); renderMobileLegend('exposureMobileLegend',items,summary.fx); document.getElementById('milfordInfo').innerHTML=['activeGrowth','aggressive'].map(key=>{const f=MILFORD_LOOKTHROUGH[key],e=f.exposure; return `<strong>${escapeHtml(f.label)} (${escapeHtml(f.asOf)})</strong>: 미국 ${e['미국'].toFixed(2)}%, 호주/뉴질랜드 ${e['호주/뉴질랜드'].toFixed(2)}%, 채권 ${e['채권'].toFixed(2)}%, 금 ${e['금'].toFixed(2)}%, Cash ${e['Cash'].toFixed(2)}%, 기타 ${e['기타'].toFixed(2)}%${f.method?`<br><span class="small-note">${escapeHtml(f.method)}</span>`:''}`;}).join('<br/>');}
-    function renderAllFromSummary(summary){lastSummary=summary; updateDisplayCurrencyButtons(); renderFx(summary.fx); renderStats(summary); renderTable(summary); renderChart(summary); renderExposureChart(summary); lastViewportMode=isMobileView()?'mobile':'desktop';}
-    function updateDashboard(){const summary=computeSummary(rows); saveSettings(summary.settings); renderAllFromSummary(summary); showError(''); showNotice(summary.fx.source==='manual'?'CSV에 환율 행이 없어 저장된/수동 입력 환율을 사용했습니다.':'CSV의 환율 행을 자동으로 적용했습니다.');}
+    function makeDoughnut(canvasId,datasets,fx){const mobile=isMobileView(); const ctx=document.getElementById(canvasId).getContext('2d'); return new Chart(ctx,{type:'doughnut',data:{datasets},options:{responsive:true,maintainAspectRatio:false,rotation:-90,circumference:360,layout:{padding:mobile?4:10},animation:false,plugins:{legend:{display:!mobile,position:'bottom',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'circle',padding:16,font:{size:12,family:'Inter, Noto Sans KR, sans-serif'},generateLabels(chart){const items=[]; chart.data.datasets.forEach((dataset,datasetIndex)=>{(dataset.data||[]).forEach((value,index)=>{if(!value) return; const label=dataset.labelsMeta[index]; items.push({text:`${label} (${formatDisplayAmount(value,fx)})`,fillStyle:dataset.backgroundColor[index],strokeStyle:dataset.backgroundColor[index],hidden:false,lineWidth:0,datasetIndex,index});});}); return items;}}},tooltip:{callbacks:{label(context){const value=Number(context.raw||0); const label=context.dataset.labelsMeta[context.dataIndex]||''; const total=(context.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0); const ratio=total>0?value/total*100:0; return `${label}: ${formatDisplayAmount(value,fx)} (${ratio.toFixed(1)}%)`;}}}}}});}
+    function renderChart(summary){const mobile=isMobileView(); if(chart) chart.destroy(); chart=makeDoughnut('allocationChart',[{label:'outer',data:summary.outer.map(i=>i.value),labelsMeta:summary.outer.map(i=>i.name),backgroundColor:summary.outer.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'60%':'58%'},{label:'inner',data:summary.inner.map(i=>i.value),labelsMeta:summary.inner.map(i=>i.name),backgroundColor:summary.inner.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'54%':'56%',cutout:mobile?'28%':'26%'}],summary.fx); renderMobileLegend('mobileLegend',[...summary.outer,...summary.inner],summary.fx);}
+    function renderExposureChart(summary){const mobile=isMobileView(); const items=summary.exposure.filter(i=>i.value>0); if(exposureChart) exposureChart.destroy(); exposureChart=makeDoughnut('exposureChart',[{label:'exposure',data:items.map(i=>i.value),labelsMeta:items.map(i=>i.name),backgroundColor:items.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'38%':'35%'}],summary.fx); renderMobileLegend('exposureMobileLegend',items,summary.fx); document.getElementById('milfordInfo').innerHTML=['activeGrowth','aggressive'].map(key=>{const f=MILFORD_LOOKTHROUGH[key],e=f.exposure; return `<strong>${escapeHtml(f.label)} (${escapeHtml(f.asOf)})</strong>: 미국 ${e['미국'].toFixed(2)}%, 호주/뉴질랜드 ${e['호주/뉴질랜드'].toFixed(2)}%, 채권 ${e['채권'].toFixed(2)}%, 금 ${e['금'].toFixed(2)}%, Cash ${e['Cash'].toFixed(2)}%, 기타 ${e['기타'].toFixed(2)}%${f.method?`<br><span class="small-note">${escapeHtml(f.method)}</span>`:''}`;}).join('<br/>');}
+    function renderAllFromSummary(summary){lastSummary=summary; updateDisplayCurrencyButtons(); renderFx(summary.fx); renderStats(summary); renderTable(summary); renderChart(summary); renderExposureChart(summary); renderLookThrough(summary); lastViewportMode=isMobileView()?'mobile':'desktop';}
+    function updateDashboard(){const summary=computeSummary(rows); saveSettings(summary.settings); renderAllFromSummary(summary); showError(''); showNotice(summary.fx.source==='manual'?'CSV에 환율 행이 없어 저장/수동 입력 환율을 사용했습니다.':'CSV의 환율 행을 자동으로 적용했습니다.');}
     function onSettingsChange(){if(!rows.length){saveSettings(getInputSettings()); updateDisplayCurrencyButtons(); return;} try{updateDashboard();}catch(error){showError(error&&error.message?error.message:'계산 중 오류가 발생했습니다.');}}
     function switchDisplayCurrency(nextCurrency){displayCurrency=nextCurrency==='KRW'?'KRW':'NZD'; const settings=getInputSettings(); saveSettings(settings); updateDisplayCurrencyButtons(); if(lastSummary){renderAllFromSummary({...lastSummary,settings:{...lastSummary.settings,displayCurrency}});}}
     function handleResponsiveRerender(){const currentMode=isMobileView()?'mobile':'desktop'; if(lastSummary&&currentMode!==lastViewportMode){renderAllFromSummary(lastSummary);}}
-    function loadSample(){showError(''); rows=parseCsv(SAMPLE_CSV); updateDashboard();}
+    function loadSample(){showError(''); rows=parseCsv(SAMPLE_CSV); fxManualOverride=false; updateDashboard();}
+
+    /* ============ ETF manager UI ============ */
+    function renderEtfManager(){
+      const list = document.getElementById('etfManagerList');
+      const keys = Object.keys(ETF_HOLDINGS).sort();
+      if(!keys.length){ list.innerHTML = `<p class="small-note">등록된 ETF가 없습니다. ‘＋ ETF 추가’로 등록하세요.</p>`; return; }
+      list.innerHTML = keys.map(k=>{
+        const e = ETF_HOLDINGS[k]; const sum=(e.holdings||[]).reduce((a,b)=>a+(Number(b.weight)||0),0);
+        return `<div class="manager-item">
+          <div><div class="m-name">${escapeHtml(k)} <span class="tkr">· ${escapeHtml(e.name||'')}</span></div>
+          <div class="m-sub">구성종목 ${(e.holdings||[]).length}개 · 상위합 ${sum.toFixed(1)}% · as of ${escapeHtml(e.asOf||'-')}</div></div>
+          <div class="row-actions">
+            <button class="btn sm" data-edit="${escapeHtml(k)}" type="button">편집</button>
+            <button class="btn sm danger" data-del="${escapeHtml(k)}" type="button">삭제</button>
+          </div></div>`;
+      }).join('');
+      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openEtfDialog(b.dataset.edit)));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{ if(confirm(`${b.dataset.del} 를 삭제할까요?`)){ delete ETF_HOLDINGS[b.dataset.del]; saveEtfHoldings(ETF_HOLDINGS); renderEtfManager(); if(lastSummary) renderLookThrough(lastSummary); } }));
+    }
+    function holdingRowHtml(h){h=h||{}; return `<div class="he-row"><input class="he-tkr" placeholder="티커" value="${escapeHtml(h.ticker||'')}" /><input class="he-name" placeholder="이름" value="${escapeHtml(h.name||'')}" /><input class="he-w" type="number" step="0.01" placeholder="%" value="${h.weight!=null?h.weight:''}" /><button type="button" class="he-x">✕</button></div>`;}
+    function refreshWeightSum(){const rows=[...document.querySelectorAll('#holdingsEditor .he-row')]; const sum=rows.reduce((a,r)=>a+(Number(r.querySelector('.he-w').value)||0),0); document.getElementById('weightSumHint').textContent=`현재 비중 합계: ${sum.toFixed(2)}% (상위 10개만 입력하면 나머지는 자동으로 ‘그 외’로 처리됩니다.)`;}
+    function bindHoldingRow(row){row.querySelector('.he-x').addEventListener('click',()=>{row.remove(); refreshWeightSum();}); row.querySelectorAll('input').forEach(i=>i.addEventListener('input',refreshWeightSum));}
+    let editingKey = null;
+    function openEtfDialog(key){
+      editingKey = key || null;
+      const dlg = document.getElementById('etfDialog');
+      document.getElementById('etfDialogTitle').textContent = key? `ETF 편집 · ${key}` : 'ETF 추가';
+      const e = key? ETF_HOLDINGS[key] : null;
+      document.getElementById('etfTicker').value = key || '';
+      document.getElementById('etfTicker').disabled = Boolean(key);
+      document.getElementById('etfFullName').value = e? (e.name||'') : '';
+      document.getElementById('etfAsOf').value = e? (e.asOf||'') : new Date().toISOString().slice(0,10);
+      const editor = document.getElementById('holdingsEditor');
+      const holds = (e&&e.holdings&&e.holdings.length)? e.holdings : [{},{},{}];
+      editor.innerHTML = holds.map(holdingRowHtml).join('');
+      editor.querySelectorAll('.he-row').forEach(bindHoldingRow);
+      refreshWeightSum();
+      dlg.showModal();
+    }
+    function saveEtfFromDialog(){
+      const ticker = normTicker(document.getElementById('etfTicker').value);
+      if(!ticker){ alert('티커를 입력하세요.'); return; }
+      const name = document.getElementById('etfFullName').value.trim();
+      const asOf = document.getElementById('etfAsOf').value.trim();
+      const holdings = [...document.querySelectorAll('#holdingsEditor .he-row')].map(r=>({
+        ticker: normTicker(r.querySelector('.he-tkr').value),
+        name: r.querySelector('.he-name').value.trim(),
+        weight: Number(r.querySelector('.he-w').value)||0
+      })).filter(h=>h.ticker && h.weight>0);
+      if(!holdings.length){ alert('구성종목을 최소 1개 이상 입력하세요.'); return; }
+      ETF_HOLDINGS[ticker] = { name, asOf, holdings };
+      saveEtfHoldings(ETF_HOLDINGS);
+      document.getElementById('etfDialog').close();
+      renderEtfManager();
+      if(lastSummary) renderLookThrough(lastSummary);
+    }
+
+    /* ============ init & events ============ */
     document.getElementById('csvFileInput').addEventListener('change',async(event)=>{const file=event.target.files&&event.target.files[0]; if(!file) return; try{showError(''); const text=await file.text(); rows=parseCsv(text); fxManualOverride=false; updateDashboard();}catch(error){showNotice(''); showError(error&&error.message?error.message:'CSV 파싱 중 오류가 발생했습니다.');}});
-    document.getElementById('milfordPdfInput').addEventListener('change',async(event)=>{try{showError(''); await handleMilfordPdfs(event.target.files||[]);}catch(error){showError(error&&error.message?error.message:'PDF 분석 중 오류가 발생했습니다.'); document.getElementById('milfordUploadStatus').textContent='업데이트 실패';}finally{event.target.value='';}}); document.getElementById('displayNzdBtn').addEventListener('click',()=>switchDisplayCurrency('NZD')); document.getElementById('displayKrwBtn').addEventListener('click',()=>switchDisplayCurrency('KRW'));
-    ['activeGrowthInput','aggressiveInput'].forEach(id=>document.getElementById(id).addEventListener('input',onSettingsChange)); ['nzdusdInput','nzdkrwInput'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fxManualOverride=true;onSettingsChange();})); window.addEventListener('resize',handleResponsiveRerender); setInputsFromStorage(); renderMilfordStatus();
+    document.getElementById('milfordPdfInput').addEventListener('change',async(event)=>{try{showError(''); await handleMilfordPdfs(event.target.files||[]);}catch(error){showError(error&&error.message?error.message:'PDF 분석 중 오류가 발생했습니다.'); document.getElementById('milfordUploadStatus').textContent='업데이트 실패';}finally{event.target.value='';}});
+    document.getElementById('sampleBtn').addEventListener('click',loadSample);
+    document.querySelectorAll('[data-cur]').forEach(b=>b.addEventListener('click',()=>switchDisplayCurrency(b.dataset.cur)));
+    ['activeGrowthInput','aggressiveInput'].forEach(id=>document.getElementById(id).addEventListener('input',onSettingsChange));
+    ['nzdusdInput','nzdkrwInput'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{fxManualOverride=true;onSettingsChange();}));
+    window.addEventListener('resize',handleResponsiveRerender);
+
+    // ETF manager events
+    document.getElementById('addEtfBtn').addEventListener('click',()=>openEtfDialog(null));
+    document.getElementById('saveEtfBtn').addEventListener('click',saveEtfFromDialog);
+    document.getElementById('addHoldingRow').addEventListener('click',()=>{const editor=document.getElementById('holdingsEditor'); editor.insertAdjacentHTML('beforeend',holdingRowHtml({})); bindHoldingRow(editor.lastElementChild); refreshWeightSum();});
+    document.getElementById('resetEtfBtn').addEventListener('click',()=>{ if(confirm('ETF 구성종목을 기본값으로 초기화할까요? (직접 추가/수정한 내용은 사라집니다)')){ saveEtfHoldings(JSON.parse(JSON.stringify(DEFAULT_ETF_HOLDINGS))); renderEtfManager(); if(lastSummary) renderLookThrough(lastSummary); } });
+    document.getElementById('exportEtfBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(ETF_HOLDINGS,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='etf_holdings.json'; a.click(); URL.revokeObjectURL(a.href); });
+    document.getElementById('importEtfBtn').addEventListener('click',()=>document.getElementById('etfImportInput').click());
+    document.getElementById('etfImportInput').addEventListener('change',async(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ const data=JSON.parse(await f.text()); if(!data||typeof data!=='object') throw 0; saveEtfHoldings(data); renderEtfManager(); if(lastSummary) renderLookThrough(lastSummary); alert('가져오기 완료'); }catch(err){ alert('올바른 JSON 형식이 아닙니다.'); } finally{ e.target.value=''; } });
+
+    setInputsFromStorage(); renderMilfordStatus(); renderEtfManager();
   </script>
 </body>
 </html>
