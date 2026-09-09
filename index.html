@@ -41,6 +41,20 @@
       background:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);box-shadow:0 6px 16px -6px rgba(124,58,237,.7)}
     .brand-name{color:#fff;font-weight:800;font-size:17px;letter-spacing:-.01em;line-height:1.1}
     .brand-sub{color:#9fb0d0;font-size:12px;font-weight:500;margin-top:2px}
+
+
+    .pdf-report-header{display:none;background:#fff;padding:8px 4px 18px;border-bottom:2px solid var(--brand);margin-bottom:18px}
+    .pdf-report-header h1{margin:0;font-size:28px;color:var(--ink)}
+    .pdf-report-header p{margin:7px 0 0;color:var(--muted);font-size:13px}
+    .pdf-progress{position:fixed;inset:0;z-index:9999;background:rgba(11,18,32,.75);display:none;place-items:center;color:#fff;text-align:center;backdrop-filter:blur(4px)}
+    .pdf-progress.show{display:grid}.pdf-progress-card{padding:24px 30px;border-radius:18px;background:#17213a;box-shadow:var(--shadow)}
+    .pdf-spinner{width:34px;height:34px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;margin:0 auto 14px;animation:pdfSpin .8s linear infinite}
+    @keyframes pdfSpin{to{transform:rotate(360deg)}}
+    .portfolio-switch{display:inline-flex;align-items:center;gap:8px;color:#c8d2e8;font-size:12px;font-weight:700}
+    .portfolio-switch select{appearance:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:#fff;padding:8px 32px 8px 12px;border-radius:12px;font:inherit;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,#c8d2e8 50%),linear-gradient(135deg,#c8d2e8 50%,transparent 50%);background-position:calc(100% - 15px) 13px,calc(100% - 10px) 13px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+    .portfolio-switch select option{color:#0b1220;background:#fff}
+    .profile-hidden{display:none!important}
+    .profile-badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.1);color:#dbe5fa;font-size:11px;font-weight:800}
     .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
     .seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
     .seg button{border:0;background:transparent;color:#c8d2e8;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s ease}
@@ -102,6 +116,16 @@
     .upload-label:hover{border-color:var(--brand);background:var(--brand-soft)}
     .upload-label input{display:none}
 
+
+    .rules-fold{border:1px solid var(--line);border-radius:16px;background:#fbfcff;overflow:hidden}
+    .rules-fold summary{list-style:none;cursor:pointer;padding:16px 18px;user-select:none;transition:.18s ease}
+    .rules-fold summary::-webkit-details-marker{display:none}
+    .rules-fold summary:hover{background:var(--brand-soft)}
+    .rules-summary-main{display:flex;align-items:center;gap:12px;color:var(--text)}
+    .rules-summary-main small{display:block;margin-top:4px;color:var(--muted);font-size:12px;font-weight:500;line-height:1.5}
+    .rules-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-size:15px;font-weight:800;transition:transform .2s ease;flex:0 0 28px}
+    .rules-fold[open] .rules-icon{transform:rotate(90deg)}
+    .rules-content{border-radius:0;border:0;border-top:1px solid #1e293b}
     .code-box{background:#0b1220;color:#e2e8f0;border-radius:14px;padding:16px;overflow:auto;border:1px solid #1e293b}
     .code-box .mini-title{font-size:12.5px;font-weight:800;margin:0;color:#a5b4fc;text-transform:uppercase;letter-spacing:.08em}
     .code-box pre{margin:8px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.75;color:#cbd5e1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -201,6 +225,11 @@
     .he-row input{padding:9px 10px;font-size:13px}
     .he-x{border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;height:38px;color:#b91c1c;font-weight:800}
 
+
+    .history-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:18px}
+    .history-controls .field{min-width:170px}.history-chart{height:360px;position:relative}
+    .history-empty{text-align:center;color:var(--muted);padding:36px 12px}
+    @media(max-width:820px){.history-chart{height:300px}.history-controls>*{width:100%}}
     @media(max-width:1024px){
       .hero-inner{grid-template-columns:1fr;gap:22px}
       .grid-2,.grid-chart{grid-template-columns:1fr}
@@ -234,16 +263,22 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <label class="portfolio-switch">PORTFOLIO
+          <select id="portfolioSelect" aria-label="포트폴리오 선택"><option value="JS">JS</option><option value="JINSEO">JINSEO</option></select>
+        </label>
+        <span class="profile-badge" id="profileModeBadge">JS · KiwiSaver 포함</span>
         <div class="seg" role="group" aria-label="표시 통화 선택">
           <button data-cur="NZD" class="active" type="button">NZD</button>
           <button data-cur="KRW" type="button">KRW</button>
         </div>
+        <button id="pdfDownloadBtn" class="ghost-btn" type="button">📄 PDF 리포트</button>
         <button id="sampleBtn" class="ghost-btn" type="button">📊 샘플 데이터</button>
       </div>
     </div>
   </header>
 
-  <div class="container">
+  <div class="container" id="pdfReportRoot">
+    <div class="pdf-report-header" id="pdfReportHeader"><h1>JS Capital · Portfolio Report</h1><p id="pdfReportMeta"></p></div>
     <!-- ================= HERO ================= -->
     <section class="hero">
       <div class="hero-inner">
@@ -251,13 +286,13 @@
           <span class="eyebrow">📈 Personal Wealth Dashboard</span>
           <div class="hero-cta" style="margin-top:24px">
             <label class="btn-primary"><span>📁 CSV 업로드</span><input type="file" id="csvFileInput" accept=".csv,text/csv" /></label>
-            <label class="btn-line"><span>📄 KiwiSaver Fact Sheet (2개)</span><input type="file" id="milfordPdfInput" accept="application/pdf,.pdf" multiple style="display:none" /></label>
+            <label class="btn-line" id="milfordUploadLabel"><span>📄 KiwiSaver Fact Sheet (2개)</span><input type="file" id="milfordPdfInput" accept="application/pdf,.pdf" multiple style="display:none" /></label>
           </div>
           <div id="milfordUploadStatus" class="hint" style="color:#c6d0e6;margin-top:14px;font-weight:600;"></div>
         </div>
         <div class="hero-kpis">
           <div class="kpi"><div class="k-label">총자산</div><div class="k-value" id="totalValue">–</div></div>
-          <div class="kpi"><div class="k-label">연금 합계</div><div class="k-value small" id="pensionTotalValue">–</div></div>
+          <div class="kpi" id="pensionKpi"><div class="k-label">연금 합계</div><div class="k-value small" id="pensionTotalValue">–</div></div>
           <div class="kpi"><div class="k-label">CSV 종목 수</div><div class="k-value" id="holdingCount">0</div></div>
           <div class="kpi"><div class="k-label">Look-through 종목 수</div><div class="k-value" id="lookthroughCount">0</div></div>
         </div>
@@ -276,18 +311,30 @@
             <h2 class="sec-title">입력 데이터 & 분류 규칙</h2>
             <p class="sec-sub">CSV의 Note가 <strong>BUY</strong>인 항목만 자산으로 집계됩니다.</p>
           </div></div>
-          <div class="code-box">
-            <p class="mini-title">자동 분류 규칙</p>
-<pre>Bond   : IEF, 305080.KS
-Gold   : IAUM, 0072R0.KS
-Cash   : KRW, USD, NZD, NZC, NZC.NZ, SGOV
-Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
-한국    : 숫자 + .KS (예외 우선)
-미국    : 영어 only, 360750.KS
-뉴질랜드 : 영어 + .NZ (NZC는 Cash 우선)
-국가별 Exposure = 직접보유 + Milford 연금 Look-through
-종목 Exposure  = 직접보유 + ETF 구성종목 Look-through</pre>
-          </div>
+          <details class="rules-fold">
+            <summary>
+              <span class="rules-summary-main"><span class="rules-icon">▸</span><span><strong>자동 분류 규칙 자세히 보기</strong><small>기본적으로 접혀 있습니다. 화살표를 눌러 전체 규칙을 확인하세요.</small></span></span>
+            </summary>
+            <div class="code-box rules-content">
+              <p class="mini-title">자동 분류 규칙</p>
+<pre>Bond    : IEF, 305080.KS
+Gold    : IAUM, 0072R0.KS
+Cash    : KRW, USD, NZD, NZC, NZC.NZ, SGOV
+Deposit : $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
+한국     : 숫자 + .KS (미국 예외 종목보다 후순위)
+미국     : 영문 티커, 360750.KS, 458730.KS
+뉴질랜드 : 영문 티커 + .NZ (NZC, NZC.NZ는 Cash 우선)
+
+분류 예외
+· 360750.KS (TIGER 미국S&P500) → 미국 Exposure / 평가통화 KRW
+· 458730.KS (TIGER 미국배당다우존스) → 미국 Exposure / 평가통화 KRW
+
+Look-through 계산
+· 국가별 Exposure = 직접보유 + Milford 연금 Look-through
+· 종목 Exposure = 개별주 직접보유 + ETF 상위 구성종목 Look-through
+· ETF 상위 구성종목 외 잔여 비중은 ‘그 외’로 처리</pre>
+            </div>
+          </details>
           <p class="small-note">💡 ETF 구성종목(Top 10)은 아래 <strong>ETF 구성종목 관리</strong>에서 수정·추가할 수 있습니다. 데이터는 이 기기 브라우저에 저장됩니다.</p>
         </div>
       </section>
@@ -299,7 +346,7 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
             <h2 class="sec-title">연금 & 환율 입력</h2>
           </div></div>
 
-          <div class="info-box" style="margin-bottom:14px;">
+          <div class="info-box" id="pensionInputBox" style="margin-bottom:14px;">
             <h3>💰 연금 수동 입력 (NZD)</h3>
             <div class="grid-2col">
               <div class="field"><label for="activeGrowthInput">Active Growth</label><input id="activeGrowthInput" type="number" min="0" step="0.01" placeholder="예: 12000" /></div>
@@ -364,12 +411,32 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
             <div id="exposureMobileLegend" class="mobile-legend"></div>
           </div>
           <div class="side-grid">
-            <div class="info-box"><h3>🏦 Milford Look-through 기준</h3><div id="milfordInfo" class="legend-note"></div></div>
+            <div class="info-box" id="milfordInfoBox"><h3>🏦 Milford Look-through 기준</h3><div id="milfordInfo" class="legend-note"></div></div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- ================= Portfolio History ================= -->
+    <section class="card section-space">
+      <div class="card-pad">
+        <div class="sec-head"><div><div class="sec-eyebrow"><span class="dot"></span>Portfolio History</div><h2 class="sec-title">자산 변동 추이</h2><p class="sec-sub">CSV 분석 결과를 날짜별 Snapshot으로 저장하여 총자산과 국가별 Exposure 변화를 비교합니다.</p></div></div>
+        <div class="history-controls">
+          <div class="field"><label for="snapshotDate">기록 기준일</label><input id="snapshotDate" type="date" /></div>
+          <button class="btn brand" id="saveSnapshotBtn" type="button">현재 분석 저장</button>
+          <button class="btn" id="exportHistoryBtn" type="button">기록 JSON 내보내기</button>
+          <button class="btn" id="importHistoryBtn" type="button">기록 JSON 가져오기</button>
+          <button class="btn danger" id="clearHistoryBtn" type="button">전체 기록 삭제</button>
+        </div>
+        <div class="grid grid-2">
+          <div class="info-box"><h3>전체자산 변동</h3><div class="history-chart"><canvas id="totalHistoryChart"></canvas><div id="totalHistoryEmpty" class="history-empty">저장된 기록이 없습니다.</div></div></div>
+          <div class="info-box"><h3>국가별 Exposure 변동</h3><div class="history-chart"><canvas id="exposureHistoryChart"></canvas><div id="exposureHistoryEmpty" class="history-empty">저장된 기록이 없습니다.</div></div></div>
+        </div>
+        <div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>기준일</th><th class="num">총자산 (NZD)</th><th>주요 Exposure</th><th style="width:80px">관리</th></tr></thead><tbody id="historyTableBody"></tbody></table></div>
+        <p class="small-note">기록은 선택한 포트폴리오(JS/JINSEO)별로 이 브라우저의 localStorage에 분리 저장됩니다. 같은 기준일을 다시 저장하면 해당 포트폴리오의 기존 기록을 덮어씁니다.</p>
+      </div>
+    </section>
+    <input type="file" id="historyImportInput" accept="application/json,.json" style="display:none" />
     <!-- ================= 국가별 Exposure 테이블 ================= -->
     <section class="card section-space">
       <div class="card-pad">
@@ -469,10 +536,16 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
   </dialog>
   <input type="file" id="etfImportInput" accept="application/json,.json" style="display:none" />
 
+  <div class="pdf-progress" id="pdfProgress"><div class="pdf-progress-card"><div class="pdf-spinner"></div><strong>PDF 리포트를 생성하고 있습니다</strong><div class="small-note" style="color:#cbd5e1;margin-top:8px">그래프와 표를 캡처하는 동안 잠시 기다려 주세요.</div></div></div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
     /* ============ constants ============ */
+    const PORTFOLIOS={JS:{label:'JS',kiwiSaver:true},JINSEO:{label:'JINSEO',kiwiSaver:false}};
+    let activePortfolio=localStorage.getItem('active_portfolio')==='JINSEO'?'JINSEO':'JS';
+    function profileKey(base){return `${base}_${activePortfolio.toLowerCase()}`;}
     const DEFAULT_FX = { usdPerNzd: 0.5910864, krwPerNzd: 870.9 };
     const DEFAULT_DISPLAY_CURRENCY = 'NZD';
     const MOBILE_BREAKPOINT = 820;
@@ -483,89 +556,40 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     const EXPOSURE_COLORS = { '미국':COLORS.us, '한국':COLORS.kr, '호주/뉴질랜드':COLORS.nz, '채권':COLORS.bond, '금':COLORS.gold, 'Cash':COLORS.cash, '기타':COLORS.other };
 
     const DEFAULT_MILFORD_LOOKTHROUGH = {
-      activeGrowth: { label:'Active Growth', asOf:'2026-06-30', method:'미국 추정 = Active International 65.18% × Aggressive 미국/International 비율 (55.50 / 79.09)', exposure:{ '미국':45.74, '한국':0, '호주/뉴질랜드':16.71, '채권':17.89, '금':0.05, 'Cash':0.17, '기타':19.44 } },
-      aggressive: { label:'Aggressive', asOf:'2026-06-30', method:'Aggressive Fact Sheet 직접 추출', exposure:{ '미국':55.63, '한국':0, '호주/뉴질랜드':20.11, '채권':0.60, '금':0.01, 'Cash':0.00, '기타':23.65 } }
+      activeGrowth: { label:'Active Growth', asOf:'2026-08-31', method:'미국 추정 = Active International 57.73% × Aggressive 미국/International 비율 (56.54 / 78.53)', exposure:{ '미국':41.70, '한국':0, '호주/뉴질랜드':14.77, '채권':20.41, '금':0.14, 'Cash':6.80, '기타':16.18 } },
+      aggressive: { label:'Aggressive', asOf:'2026-08-31', method:'Aggressive Fact Sheet 직접 추출 · 기타는 비미국 International 및 Other 잔여', exposure:{ '미국':56.54, '한국':0, '호주/뉴질랜드':19.81, '채권':0.59, '금':0.04, 'Cash':0.00, '기타':23.02 } }
     };
 
     /* ============ ETF holdings DB (editable) ============ */
     const DEFAULT_ETF_HOLDINGS = {
-      'SPYG': { name:'SPDR Portfolio S&P 500 Growth', asOf:'2026-07-22', holdings:[
-        {ticker:'NVDA',name:'NVIDIA',weight:14.65},{ticker:'MSFT',name:'Microsoft',weight:8.27},
-        {ticker:'AAPL',name:'Apple',weight:6.83},{ticker:'GOOGL',name:'Alphabet A',weight:5.72},
-        {ticker:'AVGO',name:'Broadcom',weight:5.36},{ticker:'GOOG',name:'Alphabet C',weight:4.61},
-        {ticker:'META',name:'Meta Platforms',weight:3.93},{ticker:'AMZN',name:'Amazon',weight:3.62},
-        {ticker:'MU',name:'Micron',weight:3.09},{ticker:'LLY',name:'Eli Lilly',weight:2.62} ] },
-      'IVW': { name:'iShares S&P 500 Growth', asOf:'2026-07-23', holdings:[
-        {ticker:'NVDA',name:'NVIDIA',weight:14.67},{ticker:'MSFT',name:'Microsoft',weight:8.22},
-        {ticker:'AAPL',name:'Apple',weight:6.85},{ticker:'GOOGL',name:'Alphabet A',weight:5.40},
-        {ticker:'AVGO',name:'Broadcom',weight:5.39},{ticker:'GOOG',name:'Alphabet C',weight:4.36},
-        {ticker:'META',name:'Meta Platforms',weight:3.86},{ticker:'AMZN',name:'Amazon',weight:3.52},
-        {ticker:'MU',name:'Micron',weight:3.24},{ticker:'LLY',name:'Eli Lilly',weight:2.72} ] },
-      'QQQ': { name:'Invesco QQQ Trust', asOf:'2026-07-24', holdings:[
-        {ticker:'NVDA',name:'NVIDIA',weight:8.32},{ticker:'AAPL',name:'Apple',weight:8.13},
-        {ticker:'MU',name:'Micron',weight:4.77},{ticker:'MSFT',name:'Microsoft',weight:4.72},
-        {ticker:'AMZN',name:'Amazon',weight:4.15},{ticker:'AMD',name:'AMD',weight:3.91},
-        {ticker:'GOOGL',name:'Alphabet A',weight:3.10},{ticker:'AVGO',name:'Broadcom',weight:3.01},
-        {ticker:'META',name:'Meta Platforms',weight:2.93},{ticker:'GOOG',name:'Alphabet C',weight:2.90} ] },
-      'SPY': { name:'SPDR S&P 500 ETF Trust', asOf:'2026-06-18', holdings:[
-        {ticker:'NVDA',name:'NVIDIA',weight:7.89},{ticker:'AAPL',name:'Apple',weight:7.05},
-        {ticker:'MSFT',name:'Microsoft',weight:5.14},{ticker:'AMZN',name:'Amazon',weight:4.07},
-        {ticker:'GOOGL',name:'Alphabet A',weight:3.41},{ticker:'AVGO',name:'Broadcom',weight:3.26},
-        {ticker:'GOOG',name:'Alphabet C',weight:2.90},{ticker:'META',name:'Meta Platforms',weight:2.60},
-        {ticker:'TSLA',name:'Tesla',weight:1.90},{ticker:'BRK.B',name:'Berkshire Hathaway',weight:1.80} ] },
-      'SCHD': { name:'Schwab US Dividend Equity', asOf:'2026-07-25', holdings:[
-        {ticker:'ABT',name:'Abbott Laboratories',weight:4.56},{ticker:'MRK',name:'Merck',weight:4.41},
-        {ticker:'UNH',name:'UnitedHealth',weight:4.31},{ticker:'AMGN',name:'Amgen',weight:4.29},
-        {ticker:'HD',name:'Home Depot',weight:4.11},{ticker:'PG',name:'Procter & Gamble',weight:4.06},
-        {ticker:'KO',name:'Coca-Cola',weight:4.03},{ticker:'CVX',name:'Chevron',weight:3.96},
-        {ticker:'VZ',name:'Verizon',weight:3.84},{ticker:'COP',name:'ConocoPhillips',weight:3.72} ] },
-      'EWY': { name:'iShares MSCI South Korea', asOf:'2026-07-24', holdings:[
-        {ticker:'000660.KS',name:'SK하이닉스',weight:22.57},{ticker:'005930.KS',name:'삼성전자',weight:21.67},
-        {ticker:'402340.KS',name:'SK스퀘어',weight:3.48},{ticker:'009150.KS',name:'삼성전기',weight:2.75},
-        {ticker:'105560.KS',name:'KB금융',weight:2.12},{ticker:'005380.KS',name:'현대차',weight:1.76},
-        {ticker:'055550.KS',name:'신한지주',weight:1.61},{ticker:'086790.KS',name:'하나금융',weight:1.41},
-        {ticker:'012450.KS',name:'한화에어로스페이스',weight:1.19},{ticker:'035420.KS',name:'NAVER',weight:1.18} ] },
-      '360750.KS': { name:'TIGER 미국S&P500', asOf:'2026-07-24', holdings:[
-        {ticker:'NVDA',name:'NVIDIA',weight:7.52},{ticker:'AAPL',name:'Apple',weight:7.21},
-        {ticker:'MSFT',name:'Microsoft',weight:4.43},{ticker:'AMZN',name:'Amazon',weight:3.63},
-        {ticker:'GOOGL',name:'Alphabet A',weight:3.05},{ticker:'AVGO',name:'Broadcom',weight:2.74},
-        {ticker:'GOOG',name:'Alphabet C',weight:2.45},{ticker:'META',name:'Meta Platforms',weight:2.12},
-        {ticker:'MU',name:'Micron',weight:1.64} ] },
-      '102110.KS': { name:'TIGER 200 (Mirae Asset)', asOf:'2026-07-23', holdings:[
-        {ticker:'005930.KS',name:'삼성전자',weight:33.18},{ticker:'000660.KS',name:'SK하이닉스',weight:27.79},
-        {ticker:'402340.KS',name:'SK스퀘어',weight:3.12},{ticker:'009150.KS',name:'삼성전기',weight:2.08},
-        {ticker:'005380.KS',name:'현대차',weight:1.57},{ticker:'105560.KS',name:'KB금융',weight:1.47},
-        {ticker:'055550.KS',name:'신한지주',weight:1.18},{ticker:'000270.KS',name:'기아',weight:0.98},
-        {ticker:'028260.KS',name:'삼성물산',weight:0.98},{ticker:'012450.KS',name:'한화에어로스페이스',weight:0.87} ] },
-      '292150.KS': { name:'TIGER 코리아TOP10', asOf:'2026-07-27', holdings:[
-        {ticker:'000660.KS',name:'SK하이닉스',weight:27.60},{ticker:'005930.KS',name:'삼성전자',weight:27.52},
-        {ticker:'005380.KS',name:'현대차',weight:7.08},{ticker:'105560.KS',name:'KB금융',weight:6.19},
-        {ticker:'055550.KS',name:'신한지주',weight:4.86},{ticker:'000270.KS',name:'기아',weight:4.53},
-        {ticker:'012450.KS',name:'한화에어로스페이스',weight:3.84},{ticker:'034020.KS',name:'두산에너빌리티',weight:3.78},
-        {ticker:'068270.KS',name:'셀트리온',weight:3.45} ] },
-      '396500.KS': { name:'TIGER Fn반도체TOP10', asOf:'2026-07-27', holdings:[
-        {ticker:'005930.KS',name:'삼성전자',weight:26.53},{ticker:'000660.KS',name:'SK하이닉스',weight:25.11},
-        {ticker:'402340.KS',name:'SK스퀘어',weight:22.64},{ticker:'042700.KS',name:'한미반도체',weight:4.74},
-        {ticker:'036930.KS',name:'주성엔지니어링',weight:4.14},{ticker:'007660.KS',name:'이수페타시스',weight:3.77},
-        {ticker:'240810.KS',name:'원익IPS',weight:2.80},{ticker:'000990.KS',name:'DB하이텍',weight:2.39},
-        {ticker:'058470.KS',name:'리노공업',weight:2.16} ] }
+      "SPYG": { name:"State Street SPDR Portfolio S&P 500 Growth ETF", asOf:"2026-08-13", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:14.85},{ticker:"MSFT",name:"Microsoft",weight:10.04},{ticker:"AAPL",name:"Apple",weight:6.1},{ticker:"GOOGL",name:"Alphabet A",weight:5.53},{ticker:"AVGO",name:"Broadcom",weight:5.38},{ticker:"GOOG",name:"Alphabet C",weight:4.42},{ticker:"AMZN",name:"Amazon",weight:3.74},{ticker:"META",name:"Meta Platforms",weight:3.56},{ticker:"MU",name:"Micron",weight:2.91},{ticker:"LLY",name:"Eli Lilly",weight:2.6}] },
+      "IVW": { name:"iShares S&P 500 Growth ETF", asOf:"2026-08-13", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:14.84},{ticker:"MSFT",name:"Microsoft",weight:10.04},{ticker:"AAPL",name:"Apple",weight:6.1},{ticker:"GOOGL",name:"Alphabet A",weight:5.52},{ticker:"AVGO",name:"Broadcom",weight:5.38},{ticker:"GOOG",name:"Alphabet C",weight:4.42},{ticker:"AMZN",name:"Amazon",weight:3.74},{ticker:"META",name:"Meta Platforms",weight:3.55},{ticker:"MU",name:"Micron",weight:2.91},{ticker:"LLY",name:"Eli Lilly",weight:2.6}] },
+      "QQQ": { name:"Invesco QQQ Trust", asOf:"2026-09-03", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:8.79},{ticker:"AAPL",name:"Apple",weight:7.67},{ticker:"MSFT",name:"Microsoft",weight:6.03},{ticker:"MU",name:"Micron",weight:4.75},{ticker:"AMZN",name:"Amazon",weight:4.43},{ticker:"AMD",name:"AMD",weight:3.27},{ticker:"GOOGL",name:"Alphabet A",weight:3.17},{ticker:"TSLA",name:"Tesla",weight:2.99},{ticker:"GOOG",name:"Alphabet C",weight:2.94},{ticker:"META",name:"Meta Platforms",weight:2.88}] },
+      "SPY": { name:"State Street SPDR S&P 500 ETF Trust", asOf:"2026-09-04", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:8.39},{ticker:"AAPL",name:"Apple",weight:7.07},{ticker:"MSFT",name:"Microsoft",weight:5.58},{ticker:"AMZN",name:"Amazon",weight:3.81},{ticker:"GOOGL",name:"Alphabet A",weight:2.99},{ticker:"AVGO",name:"Broadcom",weight:2.55},{ticker:"GOOG",name:"Alphabet C",weight:2.38},{ticker:"META",name:"Meta Platforms",weight:2.04},{ticker:"MU",name:"Micron",weight:1.72},{ticker:"TSLA",name:"Tesla",weight:1.5}] },
+      "SCHD": { name:"Schwab U.S. Dividend Equity ETF", asOf:"2026-09-04", holdings:[{ticker:"MRK",name:"Merck",weight:4.88},{ticker:"AMGN",name:"Amgen",weight:4.81},{ticker:"ABT",name:"Abbott Laboratories",weight:4.63},{ticker:"KO",name:"Coca-Cola",weight:4.16},{ticker:"CVX",name:"Chevron",weight:4.09},{ticker:"COP",name:"ConocoPhillips",weight:4.01},{ticker:"VZ",name:"Verizon",weight:4.0},{ticker:"UNH",name:"UnitedHealth",weight:3.92},{ticker:"PG",name:"Procter & Gamble",weight:3.89},{ticker:"HD",name:"Home Depot",weight:3.82}] },
+      "EWY": { name:"iShares MSCI South Korea ETF", asOf:"2026-08-20", holdings:[{ticker:"005930.KS",name:"삼성전자",weight:23.04},{ticker:"000660.KS",name:"SK하이닉스",weight:21.24},{ticker:"402340.KS",name:"SK스퀘어",weight:3.45},{ticker:"009150.KS",name:"삼성전기",weight:2.84},{ticker:"105560.KS",name:"KB금융",weight:1.94},{ticker:"005380.KS",name:"현대차",weight:1.79},{ticker:"055550.KS",name:"신한지주",weight:1.53},{ticker:"012450.KS",name:"한화에어로스페이스",weight:1.39},{ticker:"086790.KS",name:"하나금융",weight:1.28},{ticker:"035420.KS",name:"NAVER",weight:1.22}] },
+      "360750.KS": { name:"TIGER 미국S&P500", asOf:"2026-08-21", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:7.94},{ticker:"AAPL",name:"Apple",weight:7.02},{ticker:"MSFT",name:"Microsoft",weight:5.42},{ticker:"AMZN",name:"Amazon",weight:3.92},{ticker:"GOOGL",name:"Alphabet A",weight:3.05},{ticker:"AVGO",name:"Broadcom",weight:2.59},{ticker:"GOOG",name:"Alphabet C",weight:2.43},{ticker:"META",name:"Meta Platforms",weight:1.81},{ticker:"MU",name:"Micron",weight:1.59},{ticker:"LLY",name:"Eli Lilly",weight:1.53}] },
+      "102110.KS": { name:"TIGER 200", asOf:"2026-09-02", holdings:[{ticker:"005930.KS",name:"삼성전자",weight:34.82},{ticker:"000660.KS",name:"SK하이닉스",weight:26.95},{ticker:"402340.KS",name:"SK스퀘어",weight:2.84},{ticker:"0043B0.KS",name:"TIGER MMF액티브",weight:2.63},{ticker:"009150.KS",name:"삼성전기",weight:2.31},{ticker:"005380.KS",name:"현대차",weight:1.57},{ticker:"105560.KS",name:"KB금융",weight:1.5},{ticker:"055550.KS",name:"신한지주",weight:1.32},{ticker:"012450.KS",name:"한화에어로스페이스",weight:1.05},{ticker:"028260.KS",name:"삼성물산",weight:1.0}] },
+      "292150.KS": { name:"TIGER 코리아TOP10", asOf:"2026-09-08", holdings:[{ticker:"000660.KS",name:"SK하이닉스",weight:32.2},{ticker:"005930.KS",name:"삼성전자",weight:27.2},{ticker:"005380.KS",name:"현대차",weight:7.2},{ticker:"105560.KS",name:"KB금융",weight:6.6},{ticker:"055550.KS",name:"신한지주",weight:5.2},{ticker:"012450.KS",name:"한화에어로스페이스",weight:4.7},{ticker:"034020.KS",name:"두산에너빌리티",weight:4.4},{ticker:"000270.KS",name:"기아",weight:4.4},{ticker:"068270.KS",name:"셀트리온",weight:4.1},{ticker:"035420.KS",name:"NAVER",weight:3.9}] },
+      "396500.KS": { name:"TIGER 반도체TOP10", asOf:"2026-08-29", holdings:[{ticker:"005930.KS",name:"삼성전자",weight:30.23},{ticker:"000660.KS",name:"SK하이닉스",weight:25.52},{ticker:"402340.KS",name:"SK스퀘어",weight:20.09},{ticker:"042700.KS",name:"한미반도체",weight:5.0},{ticker:"007660.KS",name:"이수페타시스",weight:4.75},{ticker:"036930.KS",name:"주성엔지니어링",weight:4.68},{ticker:"240810.KS",name:"원익IPS",weight:2.89},{ticker:"039030.KS",name:"이오테크닉스",weight:2.53},{ticker:"000990.KS",name:"DB하이텍",weight:2.2},{ticker:"058470.KS",name:"리노공업",weight:2.05}] },
+      "458730.KS": { name:"TIGER 미국배당다우존스", asOf:"2026-09-08", holdings:[{ticker:"MRK",name:"Merck",weight:4.76},{ticker:"AMGN",name:"Amgen",weight:4.72},{ticker:"ABT",name:"Abbott Laboratories",weight:4.56},{ticker:"KO",name:"Coca-Cola",weight:4.07},{ticker:"CVX",name:"Chevron",weight:4.05},{ticker:"COP",name:"ConocoPhillips",weight:3.98},{ticker:"VZ",name:"Verizon",weight:3.93},{ticker:"UNH",name:"UnitedHealth",weight:3.83},{ticker:"PG",name:"Procter & Gamble",weight:3.8},{ticker:"HD",name:"Home Depot",weight:3.72}] }
     };
-    const ETF_STORE_KEY = 'etf_holdings_v2';
+    const ETF_STORE_KEY = 'etf_holdings_v3';
     function loadEtfHoldings(){ try{ const s=JSON.parse(localStorage.getItem(ETF_STORE_KEY)||'null'); if(s&&typeof s==='object'&&Object.keys(s).length) return s; }catch(e){} return JSON.parse(JSON.stringify(DEFAULT_ETF_HOLDINGS)); }
     function saveEtfHoldings(db){ ETF_HOLDINGS=db; localStorage.setItem(ETF_STORE_KEY, JSON.stringify(db)); }
     let ETF_HOLDINGS = loadEtfHoldings();
 
     /* ============ milford store ============ */
     let MILFORD_LOOKTHROUGH = loadMilfordLookthrough();
-    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v3')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
-    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v3',JSON.stringify(data));}
+    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v4')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
+    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v4',JSON.stringify(data));}
 
     const FX_SYMBOLS = new Set(['KRW=X','NZDKRW=X','NZDUSD=X']);
     const CASH_SYMBOLS = new Set(['KRW','USD','NZD','NZC','NZC.NZ','SGOV']);
     const CASH_BALANCE_SYMBOLS = new Set(['KRW','USD','NZD']);
     const BOND_SYMBOLS = new Set(['IEF','305080.KS']);
     const GOLD_SYMBOLS = new Set(['IAUM','0072R0.KS']);
-    const US_KRW_SYMBOLS = new Set(['360750.KS']);
+    const US_KRW_SYMBOLS = new Set(['360750.KS','458730.KS']);
     const EQUITY_CATEGORIES = new Set(['미국','한국','뉴질랜드']);
 
     let rows=[]; let fxManualOverride=false; let chart=null; let exposureChart=null; let lastSummary=null; let displayCurrency=DEFAULT_DISPLAY_CURRENCY; let lastViewportMode=null;
@@ -580,10 +604,10 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     function showNotice(message){const box=document.getElementById('noticeBox'); box.textContent=message||''; box.classList.toggle('show',Boolean(message));}
     function normTicker(s){return String(s||'').trim().toUpperCase();}
 
-    function readStoredSettings(){return {activeGrowth:Number(localStorage.getItem('pension_active_growth')||'0')||0, aggressive:Number(localStorage.getItem('pension_aggressive')||'0')||0, usdPerNzd:Number(localStorage.getItem('fx_usd_per_nzd')||String(DEFAULT_FX.usdPerNzd))||DEFAULT_FX.usdPerNzd, krwPerNzd:Number(localStorage.getItem('fx_krw_per_nzd')||String(DEFAULT_FX.krwPerNzd))||DEFAULT_FX.krwPerNzd, displayCurrency:localStorage.getItem('display_currency')||DEFAULT_DISPLAY_CURRENCY};}
-    function saveSettings(s){localStorage.setItem('pension_active_growth',String(s.activeGrowth||0)); localStorage.setItem('pension_aggressive',String(s.aggressive||0)); localStorage.setItem('fx_usd_per_nzd',String(s.usdPerNzd||0)); localStorage.setItem('fx_krw_per_nzd',String(s.krwPerNzd||0)); localStorage.setItem('display_currency',s.displayCurrency||displayCurrency||DEFAULT_DISPLAY_CURRENCY);}
+    function readStoredSettings(){const p=k=>localStorage.getItem(profileKey(k));return {activeGrowth:activePortfolio==='JS'?(Number(p('pension_active_growth')||'0')||0):0,aggressive:activePortfolio==='JS'?(Number(p('pension_aggressive')||'0')||0):0,usdPerNzd:Number(p('fx_usd_per_nzd')||String(DEFAULT_FX.usdPerNzd))||DEFAULT_FX.usdPerNzd,krwPerNzd:Number(p('fx_krw_per_nzd')||String(DEFAULT_FX.krwPerNzd))||DEFAULT_FX.krwPerNzd,displayCurrency:p('display_currency')||DEFAULT_DISPLAY_CURRENCY};}
+    function saveSettings(v){localStorage.setItem(profileKey('pension_active_growth'),String(activePortfolio==='JS'?(v.activeGrowth||0):0));localStorage.setItem(profileKey('pension_aggressive'),String(activePortfolio==='JS'?(v.aggressive||0):0));localStorage.setItem(profileKey('fx_usd_per_nzd'),String(v.usdPerNzd||0));localStorage.setItem(profileKey('fx_krw_per_nzd'),String(v.krwPerNzd||0));localStorage.setItem(profileKey('display_currency'),v.displayCurrency||displayCurrency||DEFAULT_DISPLAY_CURRENCY);}
     function setInputsFromStorage(){const s=readStoredSettings(); document.getElementById('activeGrowthInput').value=s.activeGrowth?s.activeGrowth:''; document.getElementById('aggressiveInput').value=s.aggressive?s.aggressive:''; document.getElementById('nzdusdInput').value=s.usdPerNzd||''; document.getElementById('nzdkrwInput').value=s.krwPerNzd||''; displayCurrency=(s.displayCurrency==='KRW')?'KRW':'NZD'; updateDisplayCurrencyButtons();}
-    function getInputSettings(){return {activeGrowth:Math.max(0,toNumber(document.getElementById('activeGrowthInput').value)), aggressive:Math.max(0,toNumber(document.getElementById('aggressiveInput').value)), usdPerNzd:Math.max(0,toNumber(document.getElementById('nzdusdInput').value)), krwPerNzd:Math.max(0,toNumber(document.getElementById('nzdkrwInput').value)), displayCurrency};}
+    function getInputSettings(){return {activeGrowth:activePortfolio==='JS'?Math.max(0,toNumber(document.getElementById('activeGrowthInput').value)):0, aggressive:activePortfolio==='JS'?Math.max(0,toNumber(document.getElementById('aggressiveInput').value)):0, usdPerNzd:Math.max(0,toNumber(document.getElementById('nzdusdInput').value)), krwPerNzd:Math.max(0,toNumber(document.getElementById('nzdkrwInput').value)), displayCurrency};}
 
     function formatCurrencyValue(value,currencyCode){return new Intl.NumberFormat(currencyCode==='KRW'?'ko-KR':'en-NZ',{style:'currency',currency:currencyCode,maximumFractionDigits:0}).format(Number(value||0));}
     function convertNzdForDisplay(nzdValue,fx){return displayCurrency==='KRW'?Number(nzdValue||0)*Number(fx.krwPerNzd||0):Number(nzdValue||0);}
@@ -678,6 +702,23 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     async function handleMilfordPdfs(files){const status=document.getElementById('milfordUploadStatus'); const list=[...files]; if(list.length<2) throw new Error('Active Growth와 Aggressive PDF 2개를 함께 선택해 주세요.'); status.textContent='PDF를 분석하는 중입니다...'; const docs=await Promise.all(list.map(async f=>({name:f.name,text:await extractPdfText(f)}))); const aggressiveDoc=docs.find(d=>/aggressive/i.test(d.name)&&!/active[ _-]*growth/i.test(d.name)) || docs.find(d=>/KiwiSaver Aggressive Fund Monthly Fact Sheet/i.test(d.text)); const activeDoc=docs.find(d=>/active[ _-]*growth/i.test(d.name)) || docs.find(d=>/KiwiSaver Active Growth Fund Monthly Fact Sheet/i.test(d.text)); if(!aggressiveDoc||!activeDoc||aggressiveDoc===activeDoc) throw new Error('Active Growth PDF와 Aggressive PDF를 구분하지 못했습니다.'); const ag=parseAggressiveFactSheet(aggressiveDoc.text); const ac=parseActiveFactSheet(activeDoc.text,ag); const data={activeGrowth:{label:'Active Growth',asOf:ac.asOf,method:`미국 추정 = Active International ${ac.intl.toFixed(2)}% × Aggressive 미국/International 비율 (${ag.us.toFixed(2)} / ${ag.intl.toFixed(2)})`,exposure:normalizeExposure({'미국':ac.estimatedUs,'한국':0,'호주/뉴질랜드':ac.au+ac.nz,'채권':ac.bond,'금':ac.gold,'Cash':ac.cash,'기타':ac.other})},aggressive:{label:'Aggressive',asOf:ag.asOf,method:'Aggressive Fact Sheet 직접 추출',exposure:normalizeExposure({'미국':ag.us,'한국':0,'호주/뉴질랜드':ag.au+ag.nz,'채권':ag.bond,'금':ag.gold,'Cash':ag.cash,'기타':Math.max(0,ag.intl-ag.us)})}}; saveMilfordLookthrough(data); if(rows.length) updateDashboard(); else if(lastSummary) renderAllFromSummary(lastSummary); renderMilfordStatus(); status.textContent='업데이트 완료: '+ac.asOf+' / 브라우저에 저장됨';}
     function renderMilfordStatus(){const el=document.getElementById('milfordUploadStatus'); if(!el) return; const a=MILFORD_LOOKTHROUGH.activeGrowth, g=MILFORD_LOOKTHROUGH.aggressive; el.innerHTML=`현재 적용: Active ${escapeHtml(a.asOf)} · Aggressive ${escapeHtml(g.asOf)} — Active 미국 ${a.exposure['미국'].toFixed(1)}%`;}
 
+
+    /* ============ portfolio profiles ============ */
+    function rowsStoreKey(){return profileKey('portfolio_rows_v1');}
+    function saveCurrentRows(){localStorage.setItem(rowsStoreKey(),JSON.stringify(rows||[]));}
+    function loadCurrentRows(){try{const v=JSON.parse(localStorage.getItem(rowsStoreKey())||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+    function applyPortfolioMode(){const isJs=activePortfolio==='JS';document.getElementById('portfolioSelect').value=activePortfolio;document.getElementById('profileModeBadge').textContent=isJs?'JS · KiwiSaver 포함':'JINSEO · KiwiSaver 제외';['milfordUploadLabel','milfordUploadStatus','pensionInputBox','pensionKpi','milfordInfoBox'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('profile-hidden',!isJs);});document.querySelector('#milfordPdfInput').disabled=!isJs;}
+    function switchPortfolio(next){if(!PORTFOLIOS[next]||next===activePortfolio)return;saveCurrentRows();saveSettings(getInputSettings());activePortfolio=next;localStorage.setItem('active_portfolio',activePortfolio);rows=loadCurrentRows();lastSummary=null;setInputsFromStorage();applyPortfolioMode();renderHistory();if(rows.length){try{updateDashboard();showNotice(`${activePortfolio} 포트폴리오를 불러왔습니다.`);}catch(e){showError(e.message||'포트폴리오를 불러오지 못했습니다.');}}else{document.getElementById('totalValue').textContent='–';document.getElementById('pensionTotalValue').textContent='–';document.getElementById('holdingCount').textContent='0';document.getElementById('lookthroughCount').textContent='0';showNotice(`${activePortfolio} 포트폴리오를 선택했습니다. CSV를 업로드해 주세요.`);}}
+    /* ============ portfolio history ============ */
+    const HISTORY_STORE_KEY='portfolio_history_v2';
+    function historyStoreKey(){return profileKey(HISTORY_STORE_KEY);}
+    let totalHistoryChart=null, exposureHistoryChart=null;
+    function loadHistory(){try{const v=JSON.parse(localStorage.getItem(historyStoreKey())||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+    function saveHistory(rows){localStorage.setItem(historyStoreKey(),JSON.stringify(rows));renderHistory();}
+    function snapshotFromSummary(summary,date){const exposure={};summary.exposure.forEach(x=>exposure[x.name]=Number(x.value||0));return {date,total:Number(summary.total||0),exposure,createdAt:new Date().toISOString()};}
+    function saveCurrentSnapshot(){if(!lastSummary){showError('먼저 CSV를 업로드해 포트폴리오를 분석해 주세요.');return;}const date=document.getElementById('snapshotDate').value;if(!date){showError('기록 기준일을 선택해 주세요.');return;}const h=loadHistory().filter(x=>x.date!==date);h.push(snapshotFromSummary(lastSummary,date));h.sort((a,b)=>a.date.localeCompare(b.date));saveHistory(h);showError('');showNotice(`${date} 포트폴리오 기록을 저장했습니다.`);}
+    function historyCurrencyValue(v){return displayCurrency==='KRW'?Number(v||0)*Number((lastSummary&&lastSummary.fx.krwPerNzd)||getInputSettings().krwPerNzd||1):Number(v||0);}
+    function renderHistory(){const h=loadHistory().sort((a,b)=>a.date.localeCompare(b.date));const totalEmpty=document.getElementById('totalHistoryEmpty'),expEmpty=document.getElementById('exposureHistoryEmpty');if(totalHistoryChart)totalHistoryChart.destroy();if(exposureHistoryChart)exposureHistoryChart.destroy();totalHistoryChart=exposureHistoryChart=null;totalEmpty.style.display=h.length?'none':'block';expEmpty.style.display=h.length?'none':'block';const body=document.getElementById('historyTableBody');if(!h.length){body.innerHTML='<tr><td colspan="4" class="history-empty">저장된 기록이 없습니다.</td></tr>';return;}const cur=displayCurrency;totalHistoryChart=new Chart(document.getElementById('totalHistoryChart'),{type:'line',data:{labels:h.map(x=>x.date),datasets:[{label:`총자산 (${cur})`,data:h.map(x=>historyCurrencyValue(x.total)),borderColor:COLORS.pension,backgroundColor:'rgba(139,92,246,.12)',fill:true,tension:.25,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:false,ticks:{callback:v=>new Intl.NumberFormat(cur==='KRW'?'ko-KR':'en-NZ',{notation:'compact'}).format(v)}}}}});const names=EXPOSURE_ORDER;exposureHistoryChart=new Chart(document.getElementById('exposureHistoryChart'),{type:'line',data:{labels:h.map(x=>x.date),datasets:names.map(n=>({label:n,data:h.map(x=>x.total>0?Number(x.exposure[n]||0)/x.total*100:0),borderColor:EXPOSURE_COLORS[n],backgroundColor:EXPOSURE_COLORS[n],tension:.25,pointRadius:3}))},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}},scales:{y:{min:0,ticks:{callback:v=>v+'%'}}}}});body.innerHTML=[...h].reverse().map(x=>{const top=Object.entries(x.exposure||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,v])=>`${n} ${(x.total?100*v/x.total:0).toFixed(1)}%`).join(' · ');return `<tr><td>${escapeHtml(x.date)}</td><td class="num">${formatCurrencyValue(x.total,'NZD')}</td><td>${escapeHtml(top)}</td><td><button class="btn sm danger" data-history-delete="${escapeHtml(x.date)}">삭제</button></td></tr>`}).join('');body.querySelectorAll('[data-history-delete]').forEach(b=>b.addEventListener('click',()=>saveHistory(loadHistory().filter(x=>x.date!==b.dataset.historyDelete))));}
     /* ============ renderers ============ */
     function renderFx(fx){const source=document.getElementById('fxSourceValue');if(source)source.textContent=fx.source==='csv'?'CSV 자동 인식':'직접 수정 / 저장값';}
     function renderStats(summary){document.getElementById('totalValue').textContent=formatDisplayAmount(summary.total,summary.fx); document.getElementById('holdingCount').textContent=String(summary.holdings.length); document.getElementById('pensionTotalValue').textContent=formatDisplayAmount(summary.settings.activeGrowth+summary.settings.aggressive,summary.fx);}
@@ -744,9 +785,9 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     function renderAllFromSummary(summary){lastSummary=summary; updateDisplayCurrencyButtons(); renderFx(summary.fx); renderStats(summary); renderTable(summary); renderChart(summary); renderExposureChart(summary); renderLookThrough(summary); lastViewportMode=isMobileView()?'mobile':'desktop';}
     function updateDashboard(){const summary=computeSummary(rows); saveSettings(summary.settings); renderAllFromSummary(summary); showError(''); showNotice(summary.fx.source==='manual'?'CSV에 환율 행이 없어 저장/수동 입력 환율을 사용했습니다.':'CSV의 환율 행을 자동으로 적용했습니다.');}
     function onSettingsChange(){if(!rows.length){saveSettings(getInputSettings()); updateDisplayCurrencyButtons(); return;} try{updateDashboard();}catch(error){showError(error&&error.message?error.message:'계산 중 오류가 발생했습니다.');}}
-    function switchDisplayCurrency(nextCurrency){displayCurrency=nextCurrency==='KRW'?'KRW':'NZD'; const settings=getInputSettings(); saveSettings(settings); updateDisplayCurrencyButtons(); if(lastSummary){renderAllFromSummary({...lastSummary,settings:{...lastSummary.settings,displayCurrency}});}}
+    function switchDisplayCurrency(nextCurrency){displayCurrency=nextCurrency==='KRW'?'KRW':'NZD'; const settings=getInputSettings(); saveSettings(settings); updateDisplayCurrencyButtons(); if(lastSummary){renderAllFromSummary({...lastSummary,settings:{...lastSummary.settings,displayCurrency}});} renderHistory();}
     function handleResponsiveRerender(){const currentMode=isMobileView()?'mobile':'desktop'; if(lastSummary&&currentMode!==lastViewportMode){renderAllFromSummary(lastSummary);}}
-    function loadSample(){showError(''); rows=parseCsv(SAMPLE_CSV); fxManualOverride=false; updateDashboard();}
+    function loadSample(){showError(''); rows=parseCsv(SAMPLE_CSV); saveCurrentRows(); fxManualOverride=false; updateDashboard();}
 
     /* ============ ETF manager UI ============ */
     function renderEtfManager(){
@@ -804,9 +845,92 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
       if(lastSummary) renderLookThrough(lastSummary);
     }
 
+    /* ============ resilient PDF dependencies ============ */
+    function loadExternalScript(src){return new Promise((resolve,reject)=>{const existing=[...document.scripts].find(x=>x.src===src);if(existing){if(existing.dataset.loaded==='true')return resolve();existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}const script=document.createElement('script');script.src=src;script.async=true;script.onload=()=>{script.dataset.loaded='true';resolve();};script.onerror=()=>reject(new Error('Script load failed: '+src));document.head.appendChild(script);});}
+    async function ensurePdfModules(){
+      if(typeof window.html2canvas!=='function'){
+        try{await loadExternalScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');}
+        catch(e){await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');}
+      }
+      if(!window.jspdf||!window.jspdf.jsPDF){
+        try{await loadExternalScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');}
+        catch(e){await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');}
+      }
+      return typeof window.html2canvas==='function'&&Boolean(window.jspdf&&window.jspdf.jsPDF);
+    }
+    /* ============ PDF report export ============ */
+    function safeFileDate(){return new Date().toISOString().slice(0,10);}
+    function pdfReportSections(){
+      const wanted=new Set(['2중 구조 자산배분','국가별 Exposure','자산 변동 추이','국가별 Exposure 비중 테이블','직투 종목 Exposure Top 10','보유 ETF별 구성종목 (Top 10)']);
+      const cards=[...document.querySelectorAll('#pdfReportRoot > section.card')].filter(card=>{
+        if(card.classList.contains('profile-hidden')||getComputedStyle(card).display==='none')return false;
+        const title=card.querySelector('.sec-title');return title&&wanted.has(title.textContent.trim());
+      });
+      return [document.querySelector('#pdfReportRoot .hero'),...cards].filter(Boolean);
+    }
+    function addPdfPageHeader(pdf,pageWidth,margin,title,meta,pageNo){
+      pdf.setFillColor(19,28,52);pdf.rect(0,0,pageWidth,17,'F');
+      pdf.setTextColor(255,255,255);pdf.setFontSize(13);pdf.setFont('helvetica','bold');pdf.text(title,margin,7.2);
+      pdf.setFontSize(7.5);pdf.setFont('helvetica','normal');pdf.text(meta,margin,12.2);
+      pdf.setTextColor(100,116,139);pdf.setFontSize(7);pdf.text(String(pageNo),pageWidth-margin,12.2,{align:'right'});
+    }
+    function canvasSlice(source,y,height){
+      const c=document.createElement('canvas');c.width=source.width;c.height=height;
+      const ctx=c.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
+      ctx.drawImage(source,0,y,source.width,height,0,0,source.width,height);return c;
+    }
+    async function downloadPortfolioPdf(){
+      if(!lastSummary){showError('먼저 CSV를 업로드해 포트폴리오를 분석해 주세요.');return;}
+      const btn=document.getElementById('pdfDownloadBtn'),progress=document.getElementById('pdfProgress');
+      btn.disabled=true;progress.classList.add('show');
+      try{if(!await ensurePdfModules())throw new Error('html2canvas 또는 jsPDF 초기화 실패');}
+      catch(moduleError){progress.classList.remove('show');btn.disabled=false;showError('PDF 생성 모듈을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.');return;}
+      const previousScroll={x:window.scrollX,y:window.scrollY};
+      try{
+        window.scrollTo(0,0);
+        await new Promise(resolve=>setTimeout(resolve,180));
+        const {jsPDF}=window.jspdf;
+        const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+        const pageWidth=pdf.internal.pageSize.getWidth(),pageHeight=pdf.internal.pageSize.getHeight();
+        const margin=10,headerH=21,bottom=9,contentW=pageWidth-margin*2,contentH=pageHeight-headerH-bottom;
+        const reportTitle=`${activePortfolio} Portfolio Report`;
+        const reportMeta=`Generated ${new Date().toLocaleString('en-NZ')} | Display currency ${displayCurrency}`;
+        const sections=pdfReportSections();
+        let pageNo=1;
+        for(let index=0;index<sections.length;index++){
+          const el=sections[index];
+          const canvas=await window.html2canvas(el,{scale:1.6,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:-window.scrollY,windowWidth:Math.max(1180,document.documentElement.scrollWidth),onclone:doc=>{
+            doc.body.style.background='#fff';
+            doc.querySelectorAll('.row-actions,.history-controls,.hero-cta').forEach(x=>x.style.display='none');
+            doc.querySelectorAll('.chart-wrap,.history-chart').forEach(x=>{x.style.overflow='visible';});
+          }});
+          const mmPerPx=contentW/canvas.width;
+          const fullHmm=canvas.height*mmPerPx;
+          if(index>0)pdf.addPage('a4','landscape');
+          addPdfPageHeader(pdf,pageWidth,margin,reportTitle,reportMeta,pageNo++);
+          if(fullHmm<=contentH){
+            const y=headerH+Math.max(0,(contentH-fullHmm)/2);
+            pdf.addImage(canvas.toDataURL('image/jpeg',.94),'JPEG',margin,y,contentW,fullHmm,undefined,'FAST');
+          }else{
+            const slicePx=Math.max(1,Math.floor(contentH/mmPerPx));
+            let offset=0,first=true;
+            while(offset<canvas.height){
+              if(!first){pdf.addPage('a4','landscape');addPdfPageHeader(pdf,pageWidth,margin,reportTitle,reportMeta,pageNo++);}
+              const h=Math.min(slicePx,canvas.height-offset),slice=canvasSlice(canvas,offset,h),hmm=h*mmPerPx;
+              pdf.addImage(slice.toDataURL('image/jpeg',.94),'JPEG',margin,headerH,contentW,hmm,undefined,'FAST');
+              offset+=h;first=false;
+            }
+          }
+        }
+        pdf.save(`portfolio_report_${activePortfolio.toLowerCase()}_${safeFileDate()}.pdf`);
+        showNotice(`${activePortfolio} 포트폴리오 PDF 리포트를 다운로드했습니다.`);
+      }catch(error){showError(error&&error.message?`PDF 생성 실패: ${error.message}`:'PDF 생성 중 오류가 발생했습니다.');}
+      finally{window.scrollTo(previousScroll.x,previousScroll.y);progress.classList.remove('show');btn.disabled=false;}
+    }
     /* ============ init & events ============ */
-    document.getElementById('csvFileInput').addEventListener('change',async(event)=>{const file=event.target.files&&event.target.files[0]; if(!file) return; try{showError(''); const text=await file.text(); rows=parseCsv(text); fxManualOverride=false; updateDashboard();}catch(error){showNotice(''); showError(error&&error.message?error.message:'CSV 파싱 중 오류가 발생했습니다.');}});
+    document.getElementById('csvFileInput').addEventListener('change',async(event)=>{const file=event.target.files&&event.target.files[0]; if(!file) return; try{showError(''); const text=await file.text(); rows=parseCsv(text); saveCurrentRows(); fxManualOverride=false; updateDashboard();}catch(error){showNotice(''); showError(error&&error.message?error.message:'CSV 파싱 중 오류가 발생했습니다.');}});
     document.getElementById('milfordPdfInput').addEventListener('change',async(event)=>{try{showError(''); await handleMilfordPdfs(event.target.files||[]);}catch(error){showError(error&&error.message?error.message:'PDF 분석 중 오류가 발생했습니다.'); document.getElementById('milfordUploadStatus').textContent='업데이트 실패';}finally{event.target.value='';}});
+    document.getElementById('pdfDownloadBtn').addEventListener('click',downloadPortfolioPdf);
     document.getElementById('sampleBtn').addEventListener('click',loadSample);
     document.querySelectorAll('[data-cur]').forEach(b=>b.addEventListener('click',()=>switchDisplayCurrency(b.dataset.cur)));
     ['activeGrowthInput','aggressiveInput'].forEach(id=>document.getElementById(id).addEventListener('input',onSettingsChange));
@@ -822,7 +946,17 @@ Deposit: $$CASH_TX 1~3번째 DEPOSIT → KRW, NZD, USD
     document.getElementById('importEtfBtn').addEventListener('click',()=>document.getElementById('etfImportInput').click());
     document.getElementById('etfImportInput').addEventListener('change',async(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ const data=JSON.parse(await f.text()); if(!data||typeof data!=='object') throw 0; saveEtfHoldings(data); renderEtfManager(); if(lastSummary) renderLookThrough(lastSummary); alert('가져오기 완료'); }catch(err){ alert('올바른 JSON 형식이 아닙니다.'); } finally{ e.target.value=''; } });
 
-    setInputsFromStorage(); renderMilfordStatus(); renderEtfManager();
+    document.getElementById('saveSnapshotBtn').addEventListener('click',saveCurrentSnapshot);
+    document.getElementById('exportHistoryBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(loadHistory(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`portfolio_history_${activePortfolio.toLowerCase()}.json`;a.click();URL.revokeObjectURL(a.href);});
+    document.getElementById('importHistoryBtn').addEventListener('click',()=>document.getElementById('historyImportInput').click());
+    document.getElementById('historyImportInput').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d)||d.some(x=>!x.date||!Number.isFinite(Number(x.total))||typeof x.exposure!=='object'))throw 0;saveHistory(d);showNotice('포트폴리오 기록을 가져왔습니다.');}catch(err){showError('올바른 포트폴리오 기록 JSON이 아닙니다.');}finally{e.target.value='';}});
+    document.getElementById('clearHistoryBtn').addEventListener('click',()=>{if(confirm('저장된 포트폴리오 기록을 모두 삭제할까요?'))saveHistory([]);});
+    document.getElementById('snapshotDate').value=new Date().toISOString().slice(0,10);
+    document.getElementById('portfolioSelect').addEventListener('change',e=>switchPortfolio(e.target.value));
+    rows=loadCurrentRows();
+    setInputsFromStorage(); applyPortfolioMode(); renderMilfordStatus(); renderEtfManager(); renderHistory();
+    if(rows.length){try{updateDashboard();}catch(e){showError(e.message||'저장된 포트폴리오를 불러오지 못했습니다.');}}
+
   </script>
 </body>
 </html>
