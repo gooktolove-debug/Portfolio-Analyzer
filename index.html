@@ -126,6 +126,10 @@
     .rules-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-size:15px;font-weight:800;transition:transform .2s ease;flex:0 0 28px}
     .rules-fold[open] .rules-icon{transform:rotate(90deg)}
     .rules-content{border-radius:0;border:0;border-top:1px solid #1e293b}
+    .chart-detail-fold{width:100%}
+    .chart-detail-fold .chart-detail-content{border:0;border-top:1px solid var(--line);border-radius:0;background:linear-gradient(180deg,#fbfcfe 0%,#f6f8fc 100%)}
+    .chart-detail-fold summary strong{font-size:14px}
+
     .code-box{background:#0b1220;color:#e2e8f0;border-radius:14px;padding:16px;overflow:auto;border:1px solid #1e293b}
     .code-box .mini-title{font-size:12.5px;font-weight:800;margin:0;color:#a5b4fc;text-transform:uppercase;letter-spacing:.08em}
     .code-box pre{margin:8px 0 0;white-space:pre-wrap;font-size:12px;line-height:1.75;color:#cbd5e1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -171,6 +175,13 @@
     .src-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
     .src-chip{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--brand-soft);color:#4338ca;border:1px solid #e0e2ff}
     .src-chip.direct{background:#e7f7f0;color:#047857;border-color:#c7ecdb}
+    body.jinseo-mode .lt-direct-col{display:none}
+    .bar-pct{display:none;min-width:50px;text-align:right;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+    .bar-with-pct{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+    .bar-with-pct .bar{width:78px;flex:0 0 78px;margin-top:0}
+    body.jinseo-mode .lt-total-col{display:none}
+    body.jinseo-mode .bar-pct{display:inline-block}
+
     .pct-total{font-weight:700;color:var(--brand)}
 
     .bar{height:7px;border-radius:999px;background:#eef1f7;overflow:hidden;margin-top:6px}
@@ -385,13 +396,18 @@ Look-through 계산
             <div id="mobileLegend" class="mobile-legend"></div>
           </div>
           <div class="side-grid">
-            <div class="info-box"><h3>🧭 매칭 규칙</h3>
-              <ul>
-                <li><strong>연금</strong> ↔ Active Growth, Aggressive</li>
-                <li><strong>안전자산</strong> ↔ 채권, Gold, Cash</li>
-                <li><strong>위험자산</strong> ↔ 미국, 한국, 뉴질랜드</li>
-              </ul>
-            </div>
+            <details class="rules-fold chart-detail-fold">
+              <summary>
+                <span class="rules-summary-main"><span class="rules-icon">▸</span><span><strong>🧭 매칭 규칙 자세히 보기</strong><small>화살표를 눌러 자산군 매칭 기준을 확인하세요.</small></span></span>
+              </summary>
+              <div class="info-box chart-detail-content"><h3>🧭 매칭 규칙</h3>
+                <ul>
+                  <li><strong>연금</strong> ↔ Active Growth, Aggressive</li>
+                  <li><strong>안전자산</strong> ↔ 채권, Gold, Cash</li>
+                  <li><strong>위험자산</strong> ↔ 미국, 한국, 뉴질랜드</li>
+                </ul>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -411,7 +427,12 @@ Look-through 계산
             <div id="exposureMobileLegend" class="mobile-legend"></div>
           </div>
           <div class="side-grid">
-            <div class="info-box" id="milfordInfoBox"><h3>🏦 Milford Look-through 기준</h3><div id="milfordInfo" class="legend-note"></div></div>
+            <details class="rules-fold chart-detail-fold" id="milfordInfoBox">
+              <summary>
+                <span class="rules-summary-main"><span class="rules-icon">▸</span><span><strong>🏦 Milford Look-through 기준 자세히 보기</strong><small>화살표를 눌러 펀드별 적용 비중과 계산 기준을 확인하세요.</small></span></span>
+              </summary>
+              <div class="info-box chart-detail-content"><h3>🏦 Milford Look-through 기준</h3><div id="milfordInfo" class="legend-note"></div></div>
+            </details>
           </div>
         </div>
       </div>
@@ -458,21 +479,21 @@ Look-through 계산
       <div class="card-pad">
         <div class="sec-head"><div>
           <div class="sec-eyebrow"><span class="dot"></span>Look-through · Highlight</div>
-          <h2 class="sec-title">직투 종목 Exposure Top 10</h2>
-          <p class="sec-sub">개별 종목 + 보유 ETF의 상위 구성종목을 <strong>합산</strong>해, 실제로 가장 많이 노출된 개별 기업을 보여줍니다.</p>
+          <h2 class="sec-title">Exposure Top 10</h2>
+          <p class="sec-sub">개별 종목, 보유 ETF 구성종목, JS의 Milford KiwiSaver 상위 보유종목을 합산해 실제 기업별 Exposure를 보여줍니다.</p>
         </div></div>
         <div class="table-wrap">
           <table>
             <thead><tr>
               <th style="width:56px;">#</th><th>종목</th>
               <th class="num" id="ltAmountHeader">Exposure (NZD)</th>
-              <th class="num">직투 대비</th><th class="num">전체 대비</th><th style="width:130px;">비중</th>
+              <th class="num lt-direct-col">직투 대비</th><th class="num lt-total-col">전체자산 대비</th><th style="width:150px;">비중</th>
             </tr></thead>
             <tbody id="lookthroughTableBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px;">CSV를 업로드하면 종목별 Look-through Exposure가 표시됩니다.</td></tr></tbody>
           </table>
         </div>
         <div class="coverage-note" id="coverageNote"></div>
-        <p class="small-note">· <strong>직투 대비</strong> = 직접투자(개별 종목 + ETF look-through) 합계 기준 비중 · <strong>전체 대비</strong> = 연금·채권·금·현금 포함 총자산 기준 비중</p>
+        <p class="small-note" id="lookthroughRatioNote">· <strong>직투 대비</strong> = 종목의 직접보유·ETF 기여분 ÷ 직접 주식자산 · <strong>전체 대비</strong> = 직접보유·ETF·Milford KiwiSaver 종목 Exposure ÷ 전체자산</p>
       </div>
     </section>
 
@@ -560,6 +581,12 @@ Look-through 계산
       aggressive: { label:'Aggressive', asOf:'2026-08-31', method:'Aggressive Fact Sheet 직접 추출 · 기타는 비미국 International 및 Other 잔여', exposure:{ '미국':56.54, '한국':0, '호주/뉴질랜드':19.81, '채권':0.59, '금':0.04, 'Cash':0.00, '기타':23.02 } }
     };
 
+    const MILFORD_TOP_HOLDINGS = {
+      activeGrowth:{label:'Milford Active Growth',asOf:'2026-08-31',holdings:[
+        {ticker:'MSFT',name:'Microsoft',weight:3.21},{ticker:'AMZN',name:'Amazon',weight:2.78},{ticker:'NVDA',name:'NVIDIA',weight:2.66},{ticker:'ARMK',name:'Aramark',weight:2.42},{ticker:'GOOGL',name:'Alphabet',weight:2.23},{ticker:'NGG',name:'National Grid',weight:1.97},{ticker:'SSE.L',name:'SSE',weight:1.95},{ticker:'NWG',name:'NatWest Group',weight:1.76},{ticker:'TSM',name:'TSMC',weight:1.66},{ticker:'CEN.NZ',name:'Contact Energy',weight:1.45}]},
+      aggressive:{label:'Milford Aggressive',asOf:'2026-08-31',holdings:[
+        {ticker:'MSFT',name:'Microsoft',weight:4.96},{ticker:'NVDA',name:'NVIDIA',weight:4.23},{ticker:'AMZN',name:'Amazon',weight:3.97},{ticker:'GOOGL',name:'Alphabet',weight:3.47},{ticker:'AAPL',name:'Apple',weight:2.94},{ticker:'BHP',name:'BHP Group',weight:2.30},{ticker:'TSM',name:'TSMC',weight:1.57},{ticker:'META',name:'Meta Platforms',weight:1.36},{ticker:'RIO',name:'Rio Tinto',weight:1.31},{ticker:'NWG',name:'NatWest Group',weight:1.29}]}
+    };
     /* ============ ETF holdings DB (editable) ============ */
     const DEFAULT_ETF_HOLDINGS = {
       "SPYG": { name:"State Street SPDR Portfolio S&P 500 Growth ETF", asOf:"2026-08-13", holdings:[{ticker:"NVDA",name:"NVIDIA",weight:14.85},{ticker:"MSFT",name:"Microsoft",weight:10.04},{ticker:"AAPL",name:"Apple",weight:6.1},{ticker:"GOOGL",name:"Alphabet A",weight:5.53},{ticker:"AVGO",name:"Broadcom",weight:5.38},{ticker:"GOOG",name:"Alphabet C",weight:4.42},{ticker:"AMZN",name:"Amazon",weight:3.74},{ticker:"META",name:"Meta Platforms",weight:3.56},{ticker:"MU",name:"Micron",weight:2.91},{ticker:"LLY",name:"Eli Lilly",weight:2.6}] },
@@ -632,66 +659,23 @@ Look-through 계산
 
     /* ============ NEW: stock-level look-through ============ */
     function buildLookThrough(summary){
-      // Only equity individual holdings + equity ETFs (in DB) are looked through.
-      const map = new Map();       // key = ticker -> {ticker,name,value,sources:{}}
-      const coveredEtfs = [];      // ETFs in portfolio found in DB
-      let directEquityTotal = 0;   // denominator: all equity-ish direct value considered
-      let remainder = 0;           // ETF weight beyond listed top holdings
-
-      function add(ticker, name, value, srcSymbol, isDirect){
-        const key = normTicker(ticker);
-        if(!map.has(key)) map.set(key,{ticker:key,name:name||key,value:0,sources:{}});
-        const e = map.get(key);
-        e.value += value;
-        if(name && (e.name===key || !e.name)) e.name = name; // prefer a real name
-        const tag = isDirect ? '직접보유' : srcSymbol;
-        e.sources[tag] = (e.sources[tag]||0) + value;
+      const map=new Map(),coveredEtfs=[];let directEquityTotal=0,remainder=0;
+      function add(ticker,name,value,source,kind='direct'){
+        const key=normTicker(ticker);if(!map.has(key))map.set(key,{ticker:key,name:name||key,value:0,directValue:0,pensionValue:0,sources:{}});
+        const e=map.get(key),v=Number(value||0);e.value+=v;if(kind==='pension')e.pensionValue+=v;else e.directValue+=v;
+        if(name&&(e.name===key||!e.name))e.name=name;e.sources[source]=(e.sources[source]||0)+v;
       }
-
-      // 1) aggregate portfolio holdings by symbol first (CSV has multiple BUY lots per symbol)
-      const agg = new Map(); // symbol -> {symbol, category, nzdValue}
-      summary.holdings.forEach(h=>{
-        const key = normTicker(h.symbol);
-        if(!agg.has(key)) agg.set(key,{symbol:key, category:h.category, nzdValue:0});
-        agg.get(key).nzdValue += h.nzdValue;
-      });
-
-      // 2) look through each unique symbol
-      agg.forEach(h=>{
-        const key = h.symbol;
-        const etf = ETF_HOLDINGS[key];
-        if(etf && Array.isArray(etf.holdings) && etf.holdings.length){
-          // ETF -> look through
-          directEquityTotal += h.nzdValue;
-          const listed = etf.holdings.reduce((a,b)=>a+(Number(b.weight)||0),0);
-          etf.holdings.forEach(u=>{
-            const contrib = h.nzdValue * (Number(u.weight)||0)/100;
-            add(u.ticker, u.name, contrib, key, false);
-          });
-          const rem = h.nzdValue * Math.max(0, 100-listed)/100;
-          remainder += rem;
-          coveredEtfs.push({ symbol:key, name:etf.name||key, asOf:etf.asOf||'', nzdValue:h.nzdValue, listed, holdings:etf.holdings });
-        } else if(EQUITY_CATEGORIES.has(h.category)){
-          // individual equity (not an ETF in DB)
-          directEquityTotal += h.nzdValue;
-          add(h.symbol, h.symbol, h.nzdValue, h.symbol, true);
-        }
-        // bonds / gold / cash are not stocks -> excluded from stock look-through
-      });
-      coveredEtfs.sort((a,b)=>b.nzdValue-a.nzdValue);
-
-      const companies = [...map.values()].sort((a,b)=>b.value-a.value);
-      const top = companies.slice(0,10);
-      const restStocks = companies.slice(10).reduce((a,b)=>a+b.value,0);
-      const otherBucket = restStocks + remainder; // stocks beyond top10 + ETF residual
-      const totalForRatio = directEquityTotal || 0;
-      const grandTotal = summary.total || 0; // 전체 자산(연금·채권·금·현금 포함)
-      top.forEach(c=>{ c.ratio = totalForRatio>0 ? c.value/totalForRatio*100 : 0; c.ratioTotal = grandTotal>0 ? c.value/grandTotal*100 : 0; });
-
-      const top10Sum = top.reduce((a,b)=>a+b.value,0);
-      return { top, otherBucket, totalForRatio, grandTotal, coveredEtfs, distinctCount:companies.length, top10Coverage: totalForRatio>0? top10Sum/totalForRatio*100 : 0, restCount: Math.max(0, companies.length-10) };
+      const agg=new Map();summary.holdings.forEach(h=>{const key=normTicker(h.symbol);if(!agg.has(key))agg.set(key,{symbol:key,category:h.category,nzdValue:0});agg.get(key).nzdValue+=h.nzdValue;});
+      agg.forEach(h=>{const key=h.symbol,etf=ETF_HOLDINGS[key];if(etf&&Array.isArray(etf.holdings)&&etf.holdings.length){directEquityTotal+=h.nzdValue;const listed=etf.holdings.reduce((a,b)=>a+(Number(b.weight)||0),0);etf.holdings.forEach(u=>add(u.ticker,u.name,h.nzdValue*(Number(u.weight)||0)/100,key));remainder+=h.nzdValue*Math.max(0,100-listed)/100;coveredEtfs.push({symbol:key,name:etf.name||key,asOf:etf.asOf||'',nzdValue:h.nzdValue,listed,holdings:etf.holdings});}else if(EQUITY_CATEGORIES.has(h.category)){directEquityTotal+=h.nzdValue;add(h.symbol,h.symbol,h.nzdValue,'직접보유');}});
+      if(activePortfolio==='JS'){
+        [['activeGrowth',summary.settings.activeGrowth],['aggressive',summary.settings.aggressive]].forEach(([key,amount])=>{const fund=MILFORD_TOP_HOLDINGS[key];if(fund&&amount)fund.holdings.forEach(h=>add(h.ticker,h.name,Number(amount)*h.weight/100,fund.label,'pension'));});
+      }
+      coveredEtfs.sort((a,b)=>b.nzdValue-a.nzdValue);const companies=[...map.values()].sort((a,b)=>b.value-a.value),top=companies.slice(0,10);
+      const restStocks=companies.slice(10).reduce((a,b)=>a+b.value,0),otherBucket=restStocks+remainder,totalForRatio=directEquityTotal||0,grandTotal=summary.total||0;
+      top.forEach(c=>{c.ratio=totalForRatio>0?c.directValue/totalForRatio*100:0;c.ratioTotal=grandTotal>0?c.value/grandTotal*100:0;if(activePortfolio==='JINSEO')c.ratio=c.ratioTotal;});
+      const top10Sum=top.reduce((a,b)=>a+b.value,0);
+      return {top,otherBucket,totalForRatio,grandTotal,coveredEtfs,distinctCount:companies.length,top10Coverage:grandTotal>0?top10Sum/grandTotal*100:0,restCount:Math.max(0,companies.length-10)};
     }
-
     /* ============ PDF fact sheet (unchanged logic) ============ */
     function pdfNumber(text,label){const flexibleLabel=String(label).trim().split(/\s+/).map(part=>part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s+'); const re=new RegExp(flexibleLabel+'\\s*(?:#\\s*)?([0-9]+(?:\\.[0-9]+)?)\\s*%','i'); const match=String(text||'').match(re); return match?Number(match[1]):null;}
     function pdfDate(text){const m=text.match(/as at\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})/i); if(!m) return new Date().toISOString().slice(0,10); const d=new Date(m[1]); return Number.isNaN(d.getTime())?m[1]:d.toISOString().slice(0,10);}
@@ -707,7 +691,7 @@ Look-through 계산
     function rowsStoreKey(){return profileKey('portfolio_rows_v1');}
     function saveCurrentRows(){localStorage.setItem(rowsStoreKey(),JSON.stringify(rows||[]));}
     function loadCurrentRows(){try{const v=JSON.parse(localStorage.getItem(rowsStoreKey())||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
-    function applyPortfolioMode(){const isJs=activePortfolio==='JS';document.getElementById('portfolioSelect').value=activePortfolio;document.getElementById('profileModeBadge').textContent=isJs?'JS · KiwiSaver 포함':'JINSEO · KiwiSaver 제외';['milfordUploadLabel','milfordUploadStatus','pensionInputBox','pensionKpi','milfordInfoBox'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('profile-hidden',!isJs);});document.querySelector('#milfordPdfInput').disabled=!isJs;}
+    function applyPortfolioMode(){const isJs=activePortfolio==='JS';document.body.classList.toggle('jinseo-mode',!isJs);document.getElementById('portfolioSelect').value=activePortfolio;document.getElementById('profileModeBadge').textContent=isJs?'JS · KiwiSaver 포함':'JINSEO · KiwiSaver 제외';['milfordUploadLabel','milfordUploadStatus','pensionInputBox','pensionKpi','milfordInfoBox'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('profile-hidden',!isJs);});document.querySelector('#milfordPdfInput').disabled=!isJs;const note=document.getElementById('lookthroughRatioNote');if(note)note.innerHTML=isJs?'· <strong>직투 대비</strong> = 종목의 직접보유·ETF 기여분 ÷ 직접 주식자산 · <strong>전체자산 대비</strong> = 직접보유·ETF·Milford KiwiSaver 종목 Exposure ÷ 전체자산':'· JINSEO는 모든 보유자산을 직접 운용하므로 <strong>전체자산 대비</strong> 비중만 표시합니다.';}
     function switchPortfolio(next){if(!PORTFOLIOS[next]||next===activePortfolio)return;saveCurrentRows();saveSettings(getInputSettings());activePortfolio=next;localStorage.setItem('active_portfolio',activePortfolio);rows=loadCurrentRows();lastSummary=null;setInputsFromStorage();applyPortfolioMode();renderHistory();if(rows.length){try{updateDashboard();showNotice(`${activePortfolio} 포트폴리오를 불러왔습니다.`);}catch(e){showError(e.message||'포트폴리오를 불러오지 못했습니다.');}}else{document.getElementById('totalValue').textContent='–';document.getElementById('pensionTotalValue').textContent='–';document.getElementById('holdingCount').textContent='0';document.getElementById('lookthroughCount').textContent='0';showNotice(`${activePortfolio} 포트폴리오를 선택했습니다. CSV를 업로드해 주세요.`);}}
     /* ============ portfolio history ============ */
     const HISTORY_STORE_KEY='portfolio_history_v2';
@@ -738,21 +722,22 @@ Look-through 계산
           <td><span class="rank-badge ${i<3?'top':''}">${i+1}</span></td>
           <td><div style="font-weight:700">${escapeHtml(c.name)}</div><div class="tkr">${escapeHtml(c.ticker)}</div><div class="src-chips">${chips}</div></td>
           <td class="num">${formatDisplayAmount(c.value,summary.fx)}</td>
-          <td class="num">${percent(c.ratio)}</td>
-          <td class="num pct-total">${percent(c.ratioTotal)}</td>
-          <td><div class="bar"><span style="width:${barPct}%"></span></div></td>
+          <td class="num lt-direct-col">${percent(c.ratio)}</td>
+          <td class="num pct-total lt-total-col">${percent(c.ratioTotal)}</td>
+          <td><div class="bar-with-pct"><span class="bar-pct">${percent(c.ratioTotal)}</span><div class="bar"><span style="width:${barPct}%"></span></div></div></td>
         </tr>`;
       }).join('');
-      const otherRow = lt.otherBucket>0 ? `<tr><td></td><td style="color:var(--muted)">그 외 (하위 구성종목 + ETF 잔여)</td><td class="num">${formatDisplayAmount(lt.otherBucket,summary.fx)}</td><td class="num">${percent(lt.totalForRatio>0?lt.otherBucket/lt.totalForRatio*100:0)}</td><td class="num">${percent(lt.grandTotal>0?lt.otherBucket/lt.grandTotal*100:0)}</td><td></td></tr>` : '';
-      const totalRow = `<tr class="total-row"><td></td><td>직투 종목 Exposure 합계</td><td class="num">${formatDisplayAmount(lt.totalForRatio,summary.fx)}</td><td class="num">100.0%</td><td class="num">${percent(lt.grandTotal>0?lt.totalForRatio/lt.grandTotal*100:0)}</td><td></td></tr>`;
+      const otherRow = lt.otherBucket>0 ? `<tr><td></td><td style="color:var(--muted)">그 외 (하위 구성종목 + ETF 잔여)</td><td class="num">${formatDisplayAmount(lt.otherBucket,summary.fx)}</td><td class="num lt-direct-col">${percent(lt.totalForRatio>0?lt.otherBucket/lt.totalForRatio*100:0)}</td><td class="num lt-total-col">${percent(lt.grandTotal>0?lt.otherBucket/lt.grandTotal*100:0)}</td><td><span class="bar-pct">${percent(lt.grandTotal>0?lt.otherBucket/lt.grandTotal*100:0)}</span></td></tr>` : '';
+      const totalRow = `<tr class="total-row"><td></td><td>종목 Exposure 합계</td><td class="num">${formatDisplayAmount(lt.totalForRatio,summary.fx)}</td><td class="num lt-direct-col">100.0%</td><td class="num lt-total-col">${activePortfolio==='JINSEO'?'100.0%':percent(lt.grandTotal>0?lt.totalForRatio/lt.grandTotal*100:0)}</td><td><span class="bar-pct">100.0%</span></td></tr>`;
       tbody.innerHTML = rowsHtml + otherRow + totalRow;
 
       const note = document.getElementById('coverageNote');
       const etfNames = lt.coveredEtfs.map(e=>e.symbol);
+      const milfordPill=activePortfolio==='JS'&&((summary.settings.activeGrowth||0)+(summary.settings.aggressive||0)>0)?`<span class="pill good">Milford Top Holdings 반영 · 2026-08-31</span>`:'';
       note.innerHTML =
-        `<span class="pill good">Top 10 커버리지 ${lt.top10Coverage.toFixed(1)}%</span>`+
+        `<span class="pill good">전체자산 Top 10 커버리지 ${lt.top10Coverage.toFixed(1)}%</span>`+
         `<span class="pill">고유 종목 ${lt.distinctCount}개</span>`+
-        (etfNames.length?`<span class="pill good">Look-through ETF: ${etfNames.map(escapeHtml).join(', ')}</span>`:`<span class="pill miss">등록된 보유 ETF 없음 — 아래에서 추가하세요</span>`);
+        (etfNames.length?`<span class="pill good">Look-through ETF: ${etfNames.map(escapeHtml).join(', ')}</span>`:`<span class="pill miss">등록된 보유 ETF 없음 — 아래에서 추가하세요</span>`)+milfordPill;
       renderEtfConstituents(lt);
     }
 
@@ -779,9 +764,12 @@ Look-through 계산
     }
 
     function renderMobileLegend(containerId,items,fx){const container=document.getElementById(containerId); if(!isMobileView()){container.innerHTML=''; return;} container.innerHTML=`<div class="mobile-legend-grid">${items.filter(i=>i.value>0).map(i=>`<div class="mobile-legend-item"><span class="mobile-legend-dot" style="background:${i.color}"></span><div class="mobile-legend-text"><strong>${escapeHtml(i.name)}</strong><br />${escapeHtml(formatDisplayAmount(i.value,fx))}</div></div>`).join('')}</div>`;}
-    function makeDoughnut(canvasId,datasets,fx){const mobile=isMobileView(); const ctx=document.getElementById(canvasId).getContext('2d'); return new Chart(ctx,{type:'doughnut',data:{datasets},options:{responsive:true,maintainAspectRatio:false,rotation:-90,circumference:360,layout:{padding:mobile?4:10},animation:false,plugins:{legend:{display:!mobile,position:'bottom',labels:{boxWidth:12,boxHeight:12,usePointStyle:true,pointStyle:'circle',padding:16,font:{size:12,family:'Inter, Noto Sans KR, sans-serif'},generateLabels(chart){const items=[]; chart.data.datasets.forEach((dataset,datasetIndex)=>{(dataset.data||[]).forEach((value,index)=>{if(!value) return; const label=dataset.labelsMeta[index]; items.push({text:`${label} (${formatDisplayAmount(value,fx)})`,fillStyle:dataset.backgroundColor[index],strokeStyle:dataset.backgroundColor[index],hidden:false,lineWidth:0,datasetIndex,index});});}); return items;}}},tooltip:{callbacks:{label(context){const value=Number(context.raw||0); const label=context.dataset.labelsMeta[context.dataIndex]||''; const total=(context.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0); const ratio=total>0?value/total*100:0; return `${label}: ${formatDisplayAmount(value,fx)} (${ratio.toFixed(1)}%)`;}}}}}});}
-    function renderChart(summary){const mobile=isMobileView(); if(chart) chart.destroy(); chart=makeDoughnut('allocationChart',[{label:'outer',data:summary.outer.map(i=>i.value),labelsMeta:summary.outer.map(i=>i.name),backgroundColor:summary.outer.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'60%':'58%'},{label:'inner',data:summary.inner.map(i=>i.value),labelsMeta:summary.inner.map(i=>i.name),backgroundColor:summary.inner.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'54%':'56%',cutout:mobile?'28%':'26%'}],summary.fx); renderMobileLegend('mobileLegend',[...summary.outer,...summary.inner],summary.fx);}
-    function renderExposureChart(summary){const mobile=isMobileView(); const items=summary.exposure.filter(i=>i.value>0); if(exposureChart) exposureChart.destroy(); exposureChart=makeDoughnut('exposureChart',[{label:'exposure',data:items.map(i=>i.value),labelsMeta:items.map(i=>i.name),backgroundColor:items.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'93%',cutout:mobile?'38%':'35%'}],summary.fx); renderMobileLegend('exposureMobileLegend',items,summary.fx); document.getElementById('milfordInfo').innerHTML=['activeGrowth','aggressive'].map(key=>{const f=MILFORD_LOOKTHROUGH[key],e=f.exposure; return `<strong>${escapeHtml(f.label)} (${escapeHtml(f.asOf)})</strong>: 미국 ${e['미국'].toFixed(2)}%, 호주/뉴질랜드 ${e['호주/뉴질랜드'].toFixed(2)}%, 채권 ${e['채권'].toFixed(2)}%, 금 ${e['금'].toFixed(2)}%, Cash ${e['Cash'].toFixed(2)}%, 기타 ${e['기타'].toFixed(2)}%${f.method?`<br><span class="small-note">${escapeHtml(f.method)}</span>`:''}`;}).join('<br/>');}
+    function makeDoughnut(canvasId,datasets,fx){
+      const mobile=isMobileView(),ctx=document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx,{type:'doughnut',data:{datasets},options:{responsive:true,maintainAspectRatio:false,rotation:-90,circumference:360,layout:{padding:mobile?4:{top:10,right:8,bottom:10,left:10}},animation:false,plugins:{legend:{display:!mobile,position:'right',align:'center',labels:{boxWidth:11,boxHeight:11,usePointStyle:true,pointStyle:'circle',padding:14,font:{size:11,family:'Inter, Noto Sans KR, sans-serif'},generateLabels(chart){const items=[];chart.data.datasets.forEach((dataset,datasetIndex)=>{const total=(dataset.data||[]).reduce((a,b)=>a+Number(b||0),0);(dataset.data||[]).forEach((raw,index)=>{const value=Number(raw||0);if(!value)return;const label=dataset.labelsMeta[index],ratio=total>0?value/total*100:0;items.push({text:`${label}  ${ratio.toFixed(1)}%  ·  ${formatDisplayAmount(value,fx)}`,fillStyle:dataset.backgroundColor[index],strokeStyle:dataset.backgroundColor[index],hidden:false,lineWidth:0,datasetIndex,index});});});return items;}}},tooltip:{callbacks:{label(context){const value=Number(context.raw||0),label=context.dataset.labelsMeta[context.dataIndex]||'',total=(context.dataset.data||[]).reduce((a,b)=>a+Number(b||0),0),ratio=total>0?value/total*100:0;return `${label}: ${ratio.toFixed(1)}% · ${formatDisplayAmount(value,fx)}`;}}}}}});
+    }
+    function renderChart(summary){const mobile=isMobileView(); if(chart) chart.destroy(); chart=makeDoughnut('allocationChart',[{label:'outer',data:summary.outer.map(i=>i.value),labelsMeta:summary.outer.map(i=>i.name),backgroundColor:summary.outer.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'82%',cutout:mobile?'60%':'58%'},{label:'inner',data:summary.inner.map(i=>i.value),labelsMeta:summary.inner.map(i=>i.name),backgroundColor:summary.inner.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'54%':'49%',cutout:mobile?'28%':'26%'}],summary.fx); renderMobileLegend('mobileLegend',[...summary.outer,...summary.inner],summary.fx);}
+    function renderExposureChart(summary){const mobile=isMobileView(); const items=summary.exposure.filter(i=>i.value>0); if(exposureChart) exposureChart.destroy(); exposureChart=makeDoughnut('exposureChart',[{label:'exposure',data:items.map(i=>i.value),labelsMeta:items.map(i=>i.name),backgroundColor:items.map(i=>i.color),borderColor:'#fff',borderWidth:2,hoverOffset:mobile?3:6,radius:mobile?'88%':'82%',cutout:mobile?'38%':'35%'}],summary.fx); renderMobileLegend('exposureMobileLegend',items,summary.fx); document.getElementById('milfordInfo').innerHTML=['activeGrowth','aggressive'].map(key=>{const f=MILFORD_LOOKTHROUGH[key],e=f.exposure; return `<strong>${escapeHtml(f.label)} (${escapeHtml(f.asOf)})</strong>: 미국 ${e['미국'].toFixed(2)}%, 호주/뉴질랜드 ${e['호주/뉴질랜드'].toFixed(2)}%, 채권 ${e['채권'].toFixed(2)}%, 금 ${e['금'].toFixed(2)}%, Cash ${e['Cash'].toFixed(2)}%, 기타 ${e['기타'].toFixed(2)}%${f.method?`<br><span class="small-note">${escapeHtml(f.method)}</span>`:''}`;}).join('<br/>');}
     function renderAllFromSummary(summary){lastSummary=summary; updateDisplayCurrencyButtons(); renderFx(summary.fx); renderStats(summary); renderTable(summary); renderChart(summary); renderExposureChart(summary); renderLookThrough(summary); lastViewportMode=isMobileView()?'mobile':'desktop';}
     function updateDashboard(){const summary=computeSummary(rows); saveSettings(summary.settings); renderAllFromSummary(summary); showError(''); showNotice(summary.fx.source==='manual'?'CSV에 환율 행이 없어 저장/수동 입력 환율을 사용했습니다.':'CSV의 환율 행을 자동으로 적용했습니다.');}
     function onSettingsChange(){if(!rows.length){saveSettings(getInputSettings()); updateDisplayCurrencyButtons(); return;} try{updateDashboard();}catch(error){showError(error&&error.message?error.message:'계산 중 오류가 발생했습니다.');}}
@@ -861,7 +849,7 @@ Look-through 계산
     /* ============ PDF report export ============ */
     function safeFileDate(){return new Date().toISOString().slice(0,10);}
     function pdfReportSections(){
-      const wanted=new Set(['2중 구조 자산배분','국가별 Exposure','자산 변동 추이','국가별 Exposure 비중 테이블','직투 종목 Exposure Top 10','보유 ETF별 구성종목 (Top 10)']);
+      const wanted=new Set(['2중 구조 자산배분','국가별 Exposure','자산 변동 추이','국가별 Exposure 비중 테이블','Exposure Top 10','보유 ETF별 구성종목 (Top 10)']);
       const cards=[...document.querySelectorAll('#pdfReportRoot > section.card')].filter(card=>{
         if(card.classList.contains('profile-hidden')||getComputedStyle(card).display==='none')return false;
         const title=card.querySelector('.sec-title');return title&&wanted.has(title.textContent.trim());
@@ -878,6 +866,14 @@ Look-through 계산
       const c=document.createElement('canvas');c.width=source.width;c.height=height;
       const ctx=c.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
       ctx.drawImage(source,0,y,source.width,height,0,0,source.width,height);return c;
+    }
+    function pdfProtectedRanges(el,canvas){
+      const root=el.getBoundingClientRect(),scaleY=canvas.height/Math.max(1,root.height);
+      return [...el.querySelectorAll('tbody tr,.etf-card,.manager-item,.info-box')].map(node=>{const r=node.getBoundingClientRect();return {start:Math.max(0,Math.floor((r.top-root.top)*scaleY)),end:Math.min(canvas.height,Math.ceil((r.bottom-root.top)*scaleY))};}).filter(r=>r.end>r.start).sort((a,b)=>a.start-b.start);
+    }
+    function safePdfSliceEnd(offset,desiredEnd,maxSlice,canvasHeight,ranges){
+      let end=Math.min(desiredEnd,canvasHeight);const crossing=ranges.find(r=>r.start<end&&r.end>end&&(r.end-r.start)<=maxSlice);
+      if(crossing){const room=crossing.start-offset;end=room>=Math.min(90,maxSlice*.18)?crossing.start:Math.min(canvasHeight,crossing.end);}return end>offset?end:Math.min(canvasHeight,offset+maxSlice);
     }
     async function downloadPortfolioPdf(){
       if(!lastSummary){showError('먼저 CSV를 업로드해 포트폴리오를 분석해 주세요.');return;}
@@ -912,13 +908,13 @@ Look-through 계산
             const y=headerH+Math.max(0,(contentH-fullHmm)/2);
             pdf.addImage(canvas.toDataURL('image/jpeg',.94),'JPEG',margin,y,contentW,fullHmm,undefined,'FAST');
           }else{
-            const slicePx=Math.max(1,Math.floor(contentH/mmPerPx));
+            const slicePx=Math.max(1,Math.floor(contentH/mmPerPx)),protectedRanges=pdfProtectedRanges(el,canvas);
             let offset=0,first=true;
             while(offset<canvas.height){
               if(!first){pdf.addPage('a4','landscape');addPdfPageHeader(pdf,pageWidth,margin,reportTitle,reportMeta,pageNo++);}
-              const h=Math.min(slicePx,canvas.height-offset),slice=canvasSlice(canvas,offset,h),hmm=h*mmPerPx;
-              pdf.addImage(slice.toDataURL('image/jpeg',.94),'JPEG',margin,headerH,contentW,hmm,undefined,'FAST');
-              offset+=h;first=false;
+              const desiredEnd=Math.min(canvas.height,offset+slicePx),safeEnd=safePdfSliceEnd(offset,desiredEnd,slicePx,canvas.height,protectedRanges);
+              const h=Math.max(1,safeEnd-offset),slice=canvasSlice(canvas,offset,h),hmm=h*mmPerPx;
+              pdf.addImage(slice.toDataURL('image/jpeg',.94),'JPEG',margin,headerH,contentW,hmm,undefined,'FAST');offset=safeEnd;first=false;
             }
           }
         }
