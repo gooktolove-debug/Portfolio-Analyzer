@@ -43,6 +43,21 @@
     .brand-sub{color:#9fb0d0;font-size:12px;font-weight:500;margin-top:2px}
 
 
+
+    /* PDF export: force desktop report layout even when initiated on a phone */
+    body.pdf-desktop-mode{overflow-x:auto!important}
+    body.pdf-desktop-mode #pdfReportRoot{width:1180px!important;max-width:1180px!important;min-width:1180px!important;padding:0 24px!important}
+    body.pdf-desktop-mode .hero-inner{grid-template-columns:1.25fr .9fr!important;padding:34px 36px!important}
+    body.pdf-desktop-mode .grid-2{grid-template-columns:1.15fr .85fr!important}
+    body.pdf-desktop-mode .grid-chart{grid-template-columns:1.15fr .85fr!important}
+    body.pdf-desktop-mode .etf-grid{grid-template-columns:repeat(2,1fr)!important}
+    body.pdf-desktop-mode .stats-grid{grid-template-columns:repeat(3,1fr)!important}
+    body.pdf-desktop-mode .grid-2col{grid-template-columns:1fr 1fr!important}
+    body.pdf-desktop-mode .chart-wrap{height:480px!important}
+    body.pdf-desktop-mode .history-chart{height:360px!important}
+    body.pdf-desktop-mode .mobile-legend{display:none!important}
+    body.pdf-desktop-mode .card-pad{padding:26px!important}
+    body.pdf-desktop-mode .sec-title{font-size:22px!important}
     .pdf-report-header{display:none;background:#fff;padding:8px 4px 18px;border-bottom:2px solid var(--brand);margin-bottom:18px}
     .pdf-report-header h1{margin:0;font-size:28px;color:var(--ink)}
     .pdf-report-header p{margin:7px 0 0;color:var(--muted);font-size:13px}
@@ -622,7 +637,7 @@ Look-through 계산
     let rows=[]; let fxManualOverride=false; let chart=null; let exposureChart=null; let lastSummary=null; let displayCurrency=DEFAULT_DISPLAY_CURRENCY; let lastViewportMode=null;
 
     /* ============ helpers ============ */
-    function isMobileView(){return window.innerWidth<=MOBILE_BREAKPOINT;}
+    function isMobileView(){return !document.body.classList.contains('pdf-desktop-mode')&&window.innerWidth<=MOBILE_BREAKPOINT;}
     function getCss(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
     function toNumber(value){const cleaned=String(value==null?'':value).trim().replace(/,/g,''); if(cleaned==='') return 0; return Number(cleaned);}
     function percent(n){return `${(Number(n)||0).toFixed(1)}%`;}
@@ -869,11 +884,36 @@ Look-through 계산
     }
     function pdfProtectedRanges(el,canvas){
       const root=el.getBoundingClientRect(),scaleY=canvas.height/Math.max(1,root.height);
-      return [...el.querySelectorAll('tbody tr,.etf-card,.manager-item,.info-box')].map(node=>{const r=node.getBoundingClientRect();return {start:Math.max(0,Math.floor((r.top-root.top)*scaleY)),end:Math.min(canvas.height,Math.ceil((r.bottom-root.top)*scaleY))};}).filter(r=>r.end>r.start).sort((a,b)=>a.start-b.start);
+      const nodes=[...el.querySelectorAll('.table-wrap,.etf-card,.manager-item,.info-box,tbody tr')];
+      return nodes.map(node=>{
+        const r=node.getBoundingClientRect();
+        const kind=node.matches('.table-wrap')?'table':node.matches('.etf-card')?'card':node.matches('tbody tr')?'row':'block';
+        return {start:Math.max(0,Math.floor((r.top-root.top)*scaleY)),end:Math.min(canvas.height,Math.ceil((r.bottom-root.top)*scaleY)),kind};
+      }).filter(r=>r.end>r.start).sort((a,b)=>a.start-b.start||((b.end-b.start)-(a.end-a.start)));
     }
     function safePdfSliceEnd(offset,desiredEnd,maxSlice,canvasHeight,ranges){
-      let end=Math.min(desiredEnd,canvasHeight);const crossing=ranges.find(r=>r.start<end&&r.end>end&&(r.end-r.start)<=maxSlice);
-      if(crossing){const room=crossing.start-offset;end=room>=Math.min(90,maxSlice*.18)?crossing.start:Math.min(canvasHeight,crossing.end);}return end>offset?end:Math.min(canvasHeight,offset+maxSlice);
+      let end=Math.min(desiredEnd,canvasHeight);
+      const candidates=ranges.filter(r=>r.start<end&&r.end>end&&(r.end-r.start)<=maxSlice);
+      const crossing=candidates.sort((a,b)=>{
+        const priority={table:0,card:1,block:2,row:3};
+        return (priority[a.kind]??9)-(priority[b.kind]??9)||a.start-b.start;
+      })[0];
+      if(crossing){
+        const room=crossing.start-offset;
+        end=room>=Math.min(90,maxSlice*.18)?crossing.start:Math.min(canvasHeight,crossing.end);
+      }
+      return end>offset?end:Math.min(canvasHeight,offset+maxSlice);
+    }
+    async function enterPdfDesktopMode(){
+      document.body.classList.add('pdf-desktop-mode');
+      if(lastSummary)renderAllFromSummary(lastSummary);
+      renderHistory();
+      await new Promise(resolve=>setTimeout(resolve,320));
+    }
+    function leavePdfDesktopMode(){
+      document.body.classList.remove('pdf-desktop-mode');
+      if(lastSummary)renderAllFromSummary(lastSummary);
+      renderHistory();
     }
     async function downloadPortfolioPdf(){
       if(!lastSummary){showError('먼저 CSV를 업로드해 포트폴리오를 분석해 주세요.');return;}
@@ -883,6 +923,7 @@ Look-through 계산
       catch(moduleError){progress.classList.remove('show');btn.disabled=false;showError('PDF 생성 모듈을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.');return;}
       const previousScroll={x:window.scrollX,y:window.scrollY};
       try{
+        await enterPdfDesktopMode();
         window.scrollTo(0,0);
         await new Promise(resolve=>setTimeout(resolve,180));
         const {jsPDF}=window.jspdf;
@@ -895,7 +936,7 @@ Look-through 계산
         let pageNo=1;
         for(let index=0;index<sections.length;index++){
           const el=sections[index];
-          const canvas=await window.html2canvas(el,{scale:1.6,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:-window.scrollY,windowWidth:Math.max(1180,document.documentElement.scrollWidth),onclone:doc=>{
+          const canvas=await window.html2canvas(el,{scale:1.6,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,scrollX:0,scrollY:-window.scrollY,windowWidth:1180,onclone:doc=>{
             doc.body.style.background='#fff';
             doc.querySelectorAll('.row-actions,.history-controls,.hero-cta').forEach(x=>x.style.display='none');
             doc.querySelectorAll('.chart-wrap,.history-chart').forEach(x=>{x.style.overflow='visible';});
@@ -921,7 +962,7 @@ Look-through 계산
         pdf.save(`portfolio_report_${activePortfolio.toLowerCase()}_${safeFileDate()}.pdf`);
         showNotice(`${activePortfolio} 포트폴리오 PDF 리포트를 다운로드했습니다.`);
       }catch(error){showError(error&&error.message?`PDF 생성 실패: ${error.message}`:'PDF 생성 중 오류가 발생했습니다.');}
-      finally{window.scrollTo(previousScroll.x,previousScroll.y);progress.classList.remove('show');btn.disabled=false;}
+      finally{leavePdfDesktopMode();window.scrollTo(previousScroll.x,previousScroll.y);progress.classList.remove('show');btn.disabled=false;}
     }
     /* ============ init & events ============ */
     document.getElementById('csvFileInput').addEventListener('change',async(event)=>{const file=event.target.files&&event.target.files[0]; if(!file) return; try{showError(''); const text=await file.text(); rows=parseCsv(text); saveCurrentRows(); fxManualOverride=false; updateDashboard();}catch(error){showNotice(''); showError(error&&error.message?error.message:'CSV 파싱 중 오류가 발생했습니다.');}});
