@@ -592,15 +592,15 @@ Look-through 계산
     const EXPOSURE_COLORS = { '미국':COLORS.us, '한국':COLORS.kr, '호주/뉴질랜드':COLORS.nz, '채권':COLORS.bond, '금':COLORS.gold, 'Cash':COLORS.cash, '기타':COLORS.other };
 
     const DEFAULT_MILFORD_LOOKTHROUGH = {
-      activeGrowth: { label:'Active Growth', asOf:'2026-08-31', method:'미국 추정 = Active International 57.73% × Aggressive 미국/International 비율 (56.54 / 78.53)', exposure:{ '미국':41.70, '한국':0, '호주/뉴질랜드':14.77, '채권':20.41, '금':0.14, 'Cash':6.80, '기타':16.18 } },
-      aggressive: { label:'Aggressive', asOf:'2026-08-31', method:'Aggressive Fact Sheet 직접 추출 · 기타는 비미국 International 및 Other 잔여', exposure:{ '미국':56.54, '한국':0, '호주/뉴질랜드':19.81, '채권':0.59, '금':0.04, 'Cash':0.00, '기타':23.02 } }
+      activeGrowth: { label:'Active Growth', asOf:'2026-10-31', method:'미국 추정 = Active International 52.68% × Aggressive 미국/International 비율 (55.13 / 74.95)', exposure:{ '미국':38.75, '한국':0, '호주/뉴질랜드':15.72, '채권':17.44, '금':0.33, 'Cash':13.83, '기타':13.93 } },
+      aggressive: { label:'Aggressive', asOf:'2026-10-31', method:'Aggressive Fact Sheet 직접 추출 · 기타는 비미국 International 잔여', exposure:{ '미국':55.13, '한국':0, '호주/뉴질랜드':18.77, '채권':0.21, '금':0.04, 'Cash':6.03, '기타':19.82 } }
     };
 
     const MILFORD_TOP_HOLDINGS = {
-      activeGrowth:{label:'Milford Active Growth',asOf:'2026-08-31',holdings:[
-        {ticker:'MSFT',name:'Microsoft',weight:3.21},{ticker:'AMZN',name:'Amazon',weight:2.78},{ticker:'NVDA',name:'NVIDIA',weight:2.66},{ticker:'ARMK',name:'Aramark',weight:2.42},{ticker:'GOOGL',name:'Alphabet',weight:2.23},{ticker:'NGG',name:'National Grid',weight:1.97},{ticker:'SSE.L',name:'SSE',weight:1.95},{ticker:'NWG',name:'NatWest Group',weight:1.76},{ticker:'TSM',name:'TSMC',weight:1.66},{ticker:'CEN.NZ',name:'Contact Energy',weight:1.45}]},
-      aggressive:{label:'Milford Aggressive',asOf:'2026-08-31',holdings:[
-        {ticker:'MSFT',name:'Microsoft',weight:4.96},{ticker:'NVDA',name:'NVIDIA',weight:4.23},{ticker:'AMZN',name:'Amazon',weight:3.97},{ticker:'GOOGL',name:'Alphabet',weight:3.47},{ticker:'AAPL',name:'Apple',weight:2.94},{ticker:'BHP',name:'BHP Group',weight:2.30},{ticker:'TSM',name:'TSMC',weight:1.57},{ticker:'META',name:'Meta Platforms',weight:1.36},{ticker:'RIO',name:'Rio Tinto',weight:1.31},{ticker:'NWG',name:'NatWest Group',weight:1.29}]}
+      activeGrowth:{label:'Milford Active Growth',asOf:'2026-10-31',holdings:[
+        {ticker:'MSFT',name:'Microsoft',weight:3.60},{ticker:'NVDA',name:'NVIDIA',weight:3.17},{ticker:'AMZN',name:'Amazon',weight:3.01},{ticker:'SSE.L',name:'SSE',weight:1.97},{ticker:'ARMK',name:'Aramark',weight:1.87},{ticker:'NGG',name:'National Grid',weight:1.84},{ticker:'AAPL',name:'Apple',weight:1.67},{ticker:'GOOGL',name:'Alphabet',weight:1.62},{ticker:'NWG',name:'NatWest Group',weight:1.47},{ticker:'CEN.NZ',name:'Contact Energy',weight:1.35}]},
+      aggressive:{label:'Milford Aggressive',asOf:'2026-10-31',holdings:[
+        {ticker:'MSFT',name:'Microsoft',weight:4.95},{ticker:'NVDA',name:'NVIDIA',weight:4.10},{ticker:'AMZN',name:'Amazon',weight:3.64},{ticker:'AAPL',name:'Apple',weight:3.43},{ticker:'GOOGL',name:'Alphabet',weight:2.41},{ticker:'BHP',name:'BHP Group',weight:1.84},{ticker:'META',name:'Meta Platforms',weight:1.43},{ticker:'XLV',name:'Health Care SPDR ETF',weight:1.37},{ticker:'TSM',name:'TSMC',weight:1.36},{ticker:'COP',name:'ConocoPhillips',weight:1.21}]}
     };
     /* ============ ETF holdings DB (editable) ============ */
     const DEFAULT_ETF_HOLDINGS = {
@@ -623,8 +623,8 @@ Look-through 계산
 
     /* ============ milford store ============ */
     let MILFORD_LOOKTHROUGH = loadMilfordLookthrough();
-    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v4')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
-    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v4',JSON.stringify(data));}
+    function loadMilfordLookthrough(){try{const saved=JSON.parse(localStorage.getItem('milford_lookthrough_v5')||'null'); if(saved&&saved.activeGrowth&&saved.aggressive) return saved;}catch(e){} return JSON.parse(JSON.stringify(DEFAULT_MILFORD_LOOKTHROUGH));}
+    function saveMilfordLookthrough(data){MILFORD_LOOKTHROUGH=data; localStorage.setItem('milford_lookthrough_v5',JSON.stringify(data));}
 
     const FX_SYMBOLS = new Set(['KRW=X','NZDKRW=X','NZDUSD=X']);
     const CASH_SYMBOLS = new Set(['KRW','USD','NZD','NZC','NZC.NZ','SGOV']);
@@ -748,7 +748,7 @@ Look-through 계산
 
       const note = document.getElementById('coverageNote');
       const etfNames = lt.coveredEtfs.map(e=>e.symbol);
-      const milfordPill=activePortfolio==='JS'&&((summary.settings.activeGrowth||0)+(summary.settings.aggressive||0)>0)?`<span class="pill good">Milford Top Holdings 반영 · 2026-08-31</span>`:'';
+      const milfordPill=activePortfolio==='JS'&&((summary.settings.activeGrowth||0)+(summary.settings.aggressive||0)>0)?`<span class="pill good">Milford Top Holdings 반영 · 2026-10-31</span>`:'';
       note.innerHTML =
         `<span class="pill good">전체자산 Top 10 커버리지 ${lt.top10Coverage.toFixed(1)}%</span>`+
         `<span class="pill">고유 종목 ${lt.distinctCount}개</span>`+
